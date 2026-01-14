@@ -4,26 +4,14 @@ import pandas as pd
 import pickle
 import re
 import os
+from feature_model import FeatureAwareModel
+
 
 # ============================================================
 # DEBUG CONFIGURATION
 # ============================================================
 DEBUG_FEATURE_LOG = False   # Must be False for web
 
-# ============================================================
-# REQUIRED FOR PICKLE LOADING
-# ============================================================
-class FeatureAwareModel:
-    def __init__(self, model, feature_names, target_name=None):
-        self.model = model
-        self.feature_names = list(feature_names)
-        self.target_name = target_name
-
-    def predict(self, X):
-        return self.model.predict(X[self.feature_names])
-
-    def get_feature_names(self):
-        return self.feature_names
 
 
 # ============================================================
@@ -182,3 +170,4 @@ def predict():
 # ============================================================
 if __name__ == "__main__":
     app.run()
+
