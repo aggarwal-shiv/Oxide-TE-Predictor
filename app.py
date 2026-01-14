@@ -249,25 +249,25 @@ if btn and elem_props:
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        y=0.93,
+                        y=0.99,
                         xanchor='center',
                         font=dict(size=18, color="black", family="Arial")
                     ),
                     # X-Axis
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial")),
-                        tickfont=dict(size=12, color="black", family="Arial"),
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=20, color="black", family="Arial")),
+                        tickfont=dict(size=16, color="black", family="Arial"),
                         showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
-                        showline=True, linewidth=2, linecolor='black',
-                        mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
+                        showline=True, linewidth=3, linecolor='black',
+                        mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
                     ),
                     # Y-Axis
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=14, color="black", family="Arial")),
-                        tickfont=dict(size=12, color="black", family="Arial"),
+                        title=dict(text=y_label, font=dict(size=20, color="black", family="Arial")),
+                        tickfont=dict(size=16, color="black", family="Arial"),
                         showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
-                        showline=True, linewidth=2, linecolor='black',
-                        mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
+                        showline=True, linewidth=3, linecolor='black',
+                        mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
                     ),
                     # Box Style
                     paper_bgcolor='white',
@@ -308,6 +308,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
