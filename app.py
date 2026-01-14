@@ -240,7 +240,13 @@ if btn and elem_props:
                     x=temps, y=preds,
                     mode='lines+markers',
                     line=dict(width=3, color=cfg['color']),
-                    marker=dict(size=7, color=cfg['color'], symbol='circle'),
+                    # IMPROVED SCATTER POINTS: Larger, White Border
+                    marker=dict(
+                        size=9, 
+                        color=cfg['color'], 
+                        symbol='circle',
+                        line=dict(width=2, color='white') 
+                    ),
                 ))
                 
                 # --- PLOT LAYOUT (Maximized Fill) ---
@@ -257,7 +263,10 @@ if btn and elem_props:
                     xaxis=dict(
                         title=dict(text="<b>Temperature (K)</b>", font=dict(size=20, color="black", family="Arial")),
                         tickfont=dict(size=18, color="black", family="Arial"),
-                        showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
+                        showgrid=True, 
+                        gridcolor='#E2E8F0', 
+                        gridwidth=1,
+                        griddash='dot', # GAPPED GRID LINES
                         showline=True, linewidth=3, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
                     ),
@@ -265,7 +274,10 @@ if btn and elem_props:
                     yaxis=dict(
                         title=dict(text=y_label, font=dict(size=20, color="black", family="Arial")),
                         tickfont=dict(size=18, color="black", family="Arial"),
-                        showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
+                        showgrid=True, 
+                        gridcolor='#E2E8F0', 
+                        gridwidth=1,
+                        griddash='dot', # GAPPED GRID LINES
                         showline=True, linewidth=3, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
                     ),
@@ -274,7 +286,7 @@ if btn and elem_props:
                     plot_bgcolor='white',
                     margin=dict(l=40, r=20, t=40, b=10),
                     
-                    # HEIGHT ADJUSTMENT (400px fills the rest of the screen)
+                    # HEIGHT ADJUSTMENT
                     height=360, 
                 )
                 
@@ -308,13 +320,3 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
