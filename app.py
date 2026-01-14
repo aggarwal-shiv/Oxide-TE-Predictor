@@ -26,7 +26,7 @@ st.markdown("""
         padding-bottom: 2rem !important;
         padding-left: 2rem;
         padding-right: 2rem;
-        max-width: 1400px;
+        max-width: 1300px;
         margin: 0 auto;
     }
     
@@ -256,7 +256,7 @@ if btn and elem_props:
                     # X-Axis
                     xaxis=dict(
                         title=dict(text="<b>Temperature (K)</b>", font=dict(size=20, color="black", family="Arial")),
-                        tickfont=dict(size=16, color="black", family="Arial"),
+                        tickfont=dict(size=18, color="black", family="Arial"),
                         showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
                         showline=True, linewidth=3, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
@@ -264,7 +264,7 @@ if btn and elem_props:
                     # Y-Axis
                     yaxis=dict(
                         title=dict(text=y_label, font=dict(size=20, color="black", family="Arial")),
-                        tickfont=dict(size=16, color="black", family="Arial"),
+                        tickfont=dict(size=18, color="black", family="Arial"),
                         showgrid=True, gridcolor='#E2E8F0', gridwidth=1,
                         showline=True, linewidth=3, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=3, tickcolor='black'
@@ -272,7 +272,7 @@ if btn and elem_props:
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=50, r=20, t=40, b=10),
+                    margin=dict(l=40, r=20, t=40, b=10),
                     
                     # HEIGHT ADJUSTMENT (400px fills the rest of the screen)
                     height=360, 
@@ -308,6 +308,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
