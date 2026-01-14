@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 # =============================================================================
 # 0. NAMESPACE PATCH (CRITICAL FOR PICKLE LOADING)
 # =============================================================================
-# This trick forces the pickle file to find the class even though we are in Streamlit
 try:
     import sklearn
     from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor
@@ -36,10 +35,10 @@ setattr(__main__, "FeatureAwareModel", FeatureAwareModel)
 # =============================================================================
 # 1. DEBUG CONFIGURATION
 # =============================================================================
-DEBUG_FEATURE_LOG = True   # Set False to silence logging (mapped to UI expander)
+DEBUG_FEATURE_LOG = True   
 
 # =============================================================================
-# 2. SITE DEFINITIONS (EXACT AS PROVIDED BY YOU)
+# 2. SITE DEFINITIONS
 # =============================================================================
 A_SITE_ELEMENTS = {
     "Ca","Sr","Ba","Pb","La","Nd","Sm","Gd","Dy","Ho","Eu","Pr",
@@ -52,14 +51,13 @@ B_SITE_ELEMENTS = {
 X_SITE_ELEMENTS = {"O"}
 
 # =============================================================================
-# 3. GLOBAL FONT & PLOT STYLE (EXACT COPY)
+# 3. GLOBAL FONT & PLOT STYLE
 # =============================================================================
-TARGET_FONT = "sans-serif" # Arial maps to sans-serif in web logic usually
-
+TARGET_FONT = "sans-serif"
 plt.rcParams.update({
     "font.family": TARGET_FONT,
     "font.weight": "bold",
-    "font.size": 10,  # Slightly adjusted for web readability
+    "font.size": 10,
     "axes.titlesize": 14,
     "axes.labelsize": 12,
     "xtick.labelsize": 10,
@@ -144,9 +142,17 @@ def parse_formula(formula):
     if not A_site: raise ValueError("No valid A-site elements detected.")
     if not B_site: raise ValueError("No valid B-site elements detected.")
 
-    # Normalize independently (Silent, exactly like Tkinter)
-    A_site = {k: v / sum(A_site.values()) for k, v in A_site.items()}
-    B_site = {k: v / sum(B_site.values()) for k, v in B_site.items()}
+    # --- STRICT SUM CHECK (NO NORMALIZATION) ---
+    sum_a = sum(A_site.values())
+    sum_b = sum(B_site.values())
+    
+    # We use a small epsilon for float comparison errors (e.g. 0.9999999)
+    if abs(sum_a - 1.0) > 0.01:
+        raise ValueError(f"A-site stoichiometry must sum to 1.0. Current sum: {sum_a:.2f}")
+    
+    if abs(sum_b - 1.0) > 0.01:
+        raise ValueError(f"B-site stoichiometry must sum to 1.0. Current sum: {sum_b:.2f}")
+
     return A_site, B_site
 
 def prepare_input(model, A, B, T, elem_props, debug_container=None, model_key=""):
@@ -171,9 +177,6 @@ def prepare_input(model, A, B, T, elem_props, debug_container=None, model_key=""
     
     X = pd.DataFrame(data)
 
-    # -------------------------------------------------------------------------
-    # DEBUG: Display feature construction details (Replicating _debug_print_features)
-    # -------------------------------------------------------------------------
     if DEBUG_FEATURE_LOG and debug_container:
         with debug_container:
             st.markdown(f"**[DEBUG] MODEL: {model_key}**")
@@ -193,7 +196,6 @@ def prepare_input(model, A, B, T, elem_props, debug_container=None, model_key=""
 # =============================================================================
 st.title("Perovskite TE Predictor")
 
-# Input Bar (Replicating Tkinter Frame)
 col1, col2 = st.columns([3, 1])
 with col1:
     formula_entry = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
@@ -205,7 +207,7 @@ models = load_models()
 
 if btn and elem_props:
     try:
-        # 1. Parse
+        # 1. Parse (STRICT MODE NOW ACTIVE)
         A, B = parse_formula(formula_entry.strip())
         temps = np.arange(300, 1101, 50)
         
@@ -215,7 +217,6 @@ if btn and elem_props:
         fig, axes = plt.subplots(2, 2, figsize=(12, 8))
         axes = axes.flatten()
         
-        # Debug Expander (To hold the logs cleanly)
         debug_box = st.expander("Show Debug Logs", expanded=False) if DEBUG_FEATURE_LOG else None
         
         tf_val = 0
@@ -228,11 +229,9 @@ if btn and elem_props:
                 cfg = MODELS_CONFIG[key]
                 model = models[key]
                 
-                # Prepare Input with Debug Hook
                 X, tf_val = prepare_input(model, A, B, temps, elem_props, debug_box, key)
                 preds = model.predict(X)
                 
-                # Plotting (Exact style from config)
                 ax = axes[plot_idx]
                 ax.plot(temps, preds, color=cfg["color"])
                 ax.fill_between(temps, preds.min(), preds, color=cfg["color"], alpha=0.15)
@@ -243,15 +242,16 @@ if btn and elem_props:
                 ax.grid(True, linestyle="--", alpha=0.6)
                 plot_idx += 1
         
-        # Hide unused axes
         for i in range(plot_idx, 4): axes[i].axis('off')
         
         plt.tight_layout()
         st.pyplot(fig)
         
-        # 4. Status Label (Replicating Tkinter status_lbl)
         status = "Stable Structure" if 0.75 <= tf_val <= 1.15 else "Unstable / Distorted"
         st.success(f"Tolerance Factor: {tf_val:.3f} | {status} | A-site: {A} | B-site: {B}")
 
+    except ValueError as ve:
+        # Specific error for Stoichiometry issues
+        st.error(f"Stoichiometry Error: {str(ve)}")
     except Exception as e:
         st.error(f"Prediction Error: {str(e)}")
