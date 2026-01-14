@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Perovskite TE Predictor</title>
+
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+<style>
+/* ================= GLOBAL RESET ================= */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #F5F7FA;
+    color: #172B4D;
+    font-weight: bold;
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent body scroll, let grid scroll */
+}
+
+/* ================= HEADER ================= */
+header {
+    text-align: center;
+    padding: 12px 0;
+    font-size: 24px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    flex-shrink: 0; /* Header stays fixed size */
+}
+
+/* ================= INPUT BAR ================= */
+#input-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #F5F7FA;
+    flex-shrink: 0;
+}
+
+#formula {
+    font-size: 18px;
+    padding: 8px 12px;
+    width: 260px;
+    text-align: center;
+    font-weight: bold;
+    border: 2px solid #DFE1E6;
+    border-radius: 4px;
+}
+
+button {
+    font-size: 16px;
+    padding: 9px 20px;
+    background: #0052CC;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+button:hover { background: #0747a6; }
+
+/* ================= GRID LAYOUT (FULL SCREEN) ================= */
+#plot-grid {
+    flex-grow: 1; /* Takes all remaining space */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 Columns on Desktop */
+    grid-template-rows: 1fr 1fr;    /* 2 Rows on Desktop */
+    gap: 15px;
+    padding: 15px;
+    overflow-y: auto; /* Scroll inside grid if needed */
+}
+
+/* ================= CARDS ================= */
+.plot-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    height: 100%; /* Fill the grid cell */
+    min-height: 250px; /* Minimum height so it doesn't squish too much */
+}
+
+.plot-title {
+    font-size: 16px;
+    text-align: center;
+    margin: 5px 0;
+    flex-shrink: 0;
+}
+
+.plot-inner {
+    flex-grow: 1; /* Plot fills the card */
+    width: 100%;
+    height: 100%;
+}
+
+/* ================= STATUS BAR ================= */
+#status-bar {
+    background: #E1E4E8;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-top: 2px solid #172B4D;
+    text-align: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ================= MOBILE RESPONSIVENESS ================= */
+@media (max-width: 768px) {
+    #plot-grid {
+        grid-template-columns: 1fr; /* 1 Column on Mobile */
+        grid-template-rows: auto;
+        padding: 10px;
+    }
+    .plot-card {
+        height: 300px; /* Fixed height for cards on mobile */
+    }
+    body {
+        overflow-y: auto; /* Allow full body scroll on mobile */
+    }
+    #input-bar {
+        flex-direction: column;
+    }
+    #formula { width: 100%; }
+    button { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<header>Perovskite TE Predictor</header>
+
+<div id="input-bar">
+    <input id="formula" value="La0.2Ca0.8TiO3" placeholder="Enter Formula...">
+    <button onclick="runPrediction()">Analyze Composition</button>
+</div>
+
+<div id="plot-grid">
+    <div class="plot-card">
+        <div class="plot-title">Seebeck Coefficient</div>
+        <div id="plot_S" class="plot-inner"></div>
+    </div>
+    <div class="plot-card">
+        <div class="plot-title">Electrical Conductivity</div>
+        <div id="plot_Sigma" class="plot-inner"></div>
+    </div>
+    <div class="plot-card">
+        <div class="plot-title">Thermal Conductivity</div>
+        <div id="plot_Kappa" class="plot-inner"></div>
+    </div>
+    <div class="plot-card">
+        <div class="plot-title">Figure of Merit (zT)</div>
+        <div id="plot_zT" class="plot-inner"></div>
+    </div>
+</div>
+
+<div id="status-bar">System Ready | Waiting for input...</div>
+
+<script>
+// --- 1. PLOT CONFIGURATION (EXACT STYLE) ---
+const BASE_LAYOUT = {
+    font: { family: "Arial, Helvetica, sans-serif", size: 14, color: "#172B4D" },
+    margin: { t: 20, l: 70, r: 20, b: 50 }, // Tight margins
+    autosize: true, // IMPORTANT: Allows responsive resizing
+    
+    xaxis: {
+        title: { text: "<b>Temperature (K)</b>", font: { size: 14 } },
+        showline: true, linewidth: 2, linecolor: '#172B4D',
+        mirror: true, ticks: "outside", tickwidth: 2, ticklen: 6,
+        showgrid: true, gridcolor: '#F0F0F0'
+    },
+    yaxis: {
+        showline: true, linewidth: 2, linecolor: '#172B4D',
+        mirror: true, ticks: "outside", tickwidth: 2, ticklen: 6,
+        showgrid: true, gridcolor: '#F0F0F0'
+    },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)"
+};
+
+const CONFIG = { responsive: true, displayModeBar: false };
+
+// --- 2. LOGIC ---
+function runPrediction() {
+    const status = document.getElementById("status-bar");
+    const btn = document.querySelector("button");
+    const formula = document.getElementById("formula").value;
+
+    status.innerText = "Processing...";
+    status.style.background = "#fff3cd"; // Yellow loading
+    btn.disabled = true;
+
+    fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formula: formula })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            status.innerText = "Error: " + data.error;
+            status.style.background = "#f8d7da"; // Red error
+            btn.disabled = false;
+            return;
+        }
+
+        // Update Status
+        status.innerText = `Tolerance Factor: ${data.tolerance_factor.toFixed(3)} | A-site Sum: 1.00 | B-site Sum: 1.00`;
+        status.style.background = "#d4edda"; // Green success
+
+        // Draw Plots
+        const T = data.temperature;
+        const P = data.predictions;
+
+        draw("plot_S", T, P.S, "#1f77b4", "<b>S (µV·K⁻¹)</b>");
+        draw("plot_Sigma", T, P.Sigma, "#ff7f0e", "<b>σ (S·cm⁻¹)</b>");
+        draw("plot_Kappa", T, P.Kappa, "#2ca02c", "<b>κ (W·m⁻¹·K⁻¹)</b>");
+        draw("plot_zT", T, P.zT, "#d62728", "<b>zT (Dimensionless)</b>");
+        
+        btn.disabled = false;
+    })
+    .catch(err => {
+        status.innerText = "Network Error: " + err;
+        btn.disabled = false;
+    });
+}
+
+function draw(id, x, y, color, yLabel) {
+    if (!y) return; // Skip if model missing
+
+    const trace = {
+        x: x, y: y,
+        mode: "lines+markers",
+        line: { color: color, width: 3 },
+        marker: { size: 6, color: color }
+    };
+
+    // Clone layout to avoid overwriting shared object
+    const layout = JSON.parse(JSON.stringify(BASE_LAYOUT));
+    layout.yaxis.title = { text: yLabel, font: { size: 14 } };
+
+    Plotly.newPlot(id, [trace], layout, CONFIG);
+}
+
+// Initial draw (Optional: empty grids)
+document.addEventListener("DOMContentLoaded", () => {
+    // Just to show grid before first run
+    // runPrediction(); 
+});
+
+// Window resize handler to ensure plots snap to grid
+window.onresize = function() {
+    const ids = ["plot_S", "plot_Sigma", "plot_Kappa", "plot_zT"];
+    ids.forEach(id => {
+        try { Plotly.Plots.resize(document.getElementById(id)); } catch(e){}
+    });
+};
+</script>
+
+</body>
+</html>
