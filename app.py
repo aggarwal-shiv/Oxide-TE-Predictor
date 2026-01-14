@@ -251,7 +251,7 @@ if btn and elem_props:
                         x=0.5,
                         y=0.99,
                         xanchor='center',
-                        font=dict(size=18, color="black", family="Arial")
+                        font=dict(size=24, color="black", family="Arial")
                     ),
                     # X-Axis
                     xaxis=dict(
@@ -272,7 +272,7 @@ if btn and elem_props:
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=60, r=20, t=50, b=40),
+                    margin=dict(l=50, r=20, t=30, b=30),
                     
                     # HEIGHT ADJUSTMENT (400px fills the rest of the screen)
                     height=400, 
@@ -308,6 +308,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
