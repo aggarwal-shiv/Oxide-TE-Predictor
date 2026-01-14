@@ -1,18 +1,26 @@
+# ============================================================
+# CRITICAL PICKLE COMPATIBILITY PATCH (DO NOT MOVE)
+# ============================================================
+import sys
+from feature_model import FeatureAwareModel
+
+# 🔑 makes legacy pickles (__main__.FeatureAwareModel) loadable
+sys.modules['__main__'].FeatureAwareModel = FeatureAwareModel
+
+# ============================================================
+# IMPORTS
+# ============================================================
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 import pandas as pd
 import pickle
 import re
 import os
-from feature_model import FeatureAwareModel
-
 
 # ============================================================
 # DEBUG CONFIGURATION
 # ============================================================
-DEBUG_FEATURE_LOG = False   # Must be False for web
-
-
+DEBUG_FEATURE_LOG = False  # must be False on web
 
 # ============================================================
 # SITE DEFINITIONS (UNCHANGED)
@@ -44,15 +52,15 @@ PROP_MAP = {
     "MP": "Melting_Point_C",
     "BP": "Boiling_Point_C",
     "AD": "Atomic_Density_g_per_cm3",
-    "HoE": "Heat_of_Evaporation_kJ_per_mol",
-    "HoF": "Heat_of_Fusion_kJ_per_mol",
+    "HE": "Heat_of_Evaporation_kJ_per_mol",
+    "HF": "Heat_of_Fusion_kJ_per_mol",
 }
 
 MODELS_CONFIG = {
     "S": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl",
     "Sigma": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl",
     "Kappa": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl",
-    "zT": "Figure_of_Merit_zT_CatBoost.pkl",
+    "zT": "Figure_of_Merit_zT_CatBoost.pkl"
 }
 
 # ============================================================
@@ -61,18 +69,24 @@ MODELS_CONFIG = {
 app = Flask(__name__)
 
 # ============================================================
-# LOAD ELEMENT DATABASE
+# LOAD ELEMENTAL PROPERTY DATABASE
 # ============================================================
+if not os.path.exists(PROPERTIES_DB_PATH):
+    raise FileNotFoundError("Elemental property database not found.")
+
 df = pd.read_excel(PROPERTIES_DB_PATH)
 df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric, errors="coerce")
 ELEM_PROPS = df.set_index("Element").T.to_dict()
 
 # ============================================================
-# LOAD MODELS (ONCE)
+# LOAD MODELS (SAFE FOR GUNICORN)
 # ============================================================
 MODELS = {}
 for key, fname in MODELS_CONFIG.items():
-    with open(os.path.join(BASE_MODEL_DIR, fname), "rb") as f:
+    path = os.path.join(BASE_MODEL_DIR, fname)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Missing model file: {fname}")
+    with open(path, "rb") as f:
         MODELS[key] = pickle.load(f)
 
 # ============================================================
@@ -101,8 +115,10 @@ def parse_formula(formula):
         else:
             raise ValueError(f"Element '{el}' not defined for A/B site.")
 
-    if not A_site or not B_site:
-        raise ValueError("Invalid perovskite composition.")
+    if not A_site:
+        raise ValueError("No valid A-site elements detected.")
+    if not B_site:
+        raise ValueError("No valid B-site elements detected.")
 
     A_site = {k: v / sum(A_site.values()) for k, v in A_site.items()}
     B_site = {k: v / sum(B_site.values()) for k, v in B_site.items()}
@@ -113,7 +129,7 @@ def parse_formula(formula):
 # FEATURE CONSTRUCTION (IDENTICAL)
 # ============================================================
 def prepare_input(model, A, B, T):
-    req = model.get_feature_names()
+    req_features = model.get_feature_names()
     N = len(T)
     vals = {}
 
@@ -127,7 +143,7 @@ def prepare_input(model, A, B, T):
     vals["τ"] = tf
 
     data = {}
-    for col in req:
+    for col in req_features:
         if col == "T":
             data[col] = T
         elif col in vals:
@@ -166,8 +182,7 @@ def predict():
     })
 
 # ============================================================
-# RUN
+# ENTRY POINT (LOCAL ONLY)
 # ============================================================
 if __name__ == "__main__":
-    app.run()
-
+    app.run(debug=True)
