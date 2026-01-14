@@ -5,52 +5,93 @@ import pickle
 import re
 import os
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 # =============================================================================
-# 1. SETUP & CONFIGURATION
+# 1. VISUAL CONFIGURATION (CSS HACKING)
 # =============================================================================
 st.set_page_config(page_title="Perovskite TE Predictor", layout="wide")
 
-# Custom CSS to mimic your HTML style exactly
+# This CSS blocks makes Streamlit look EXACTLY like your HTML image
 st.markdown("""
 <style>
-    /* Hide Streamlit elements to make it look like a custom web app */
+    /* 1. GLOBAL FONT */
+    html, body, [class*="css"] {
+        font-family: 'Arial', sans-serif;
+        background-color: #F8F9FA; /* Light grey background */
+    }
+
+    /* 2. CENTER TITLE */
+    h1 {
+        text-align: center;
+        color: #172B4D;
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin-bottom: 0px;
+        padding-bottom: 10px;
+    }
+
+    /* 3. CENTER & STYLE INPUTS */
+    /* This targets the input box to make it centered and grey */
+    div[data-testid="stTextInput"] {
+        text-align: center;
+        margin: 0 auto;
+    }
+    div[data-testid="stTextInput"] input {
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        background-color: #E9ECEF;
+        color: #333;
+        border-radius: 8px;
+        border: 1px solid #CED4DA;
+        padding: 10px;
+    }
+
+    /* 4. STYLE BUTTON (RED/ORANGE) */
+    div.stButton > button {
+        width: 100%;
+        background-color: #ff4b4b; /* The Red/Orange color */
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    div.stButton > button:hover {
+        background-color: #ff3333;
+        color: white;
+        border: none;
+    }
+
+    /* 5. HIDE DEFAULT STREAMLIT MENU */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    
-    /* Input Box Styling */
-    .stTextInput input {
-        text-align: center;
-        font-weight: bold;
-        font-size: 1.2rem;
-        border: 2px solid #DFE1E6;
-    }
-    
-    /* Status Bar Styling */
+    /* 6. STATUS BAR AT BOTTOM */
     .status-box {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background-color: #E1E4E8;
+        background-color: #ffffff;
         padding: 10px;
         text-align: center;
-        border-top: 2px solid #172B4D;
+        border-top: 1px solid #ddd;
         font-weight: bold;
+        color: #333;
         z-index: 9999;
-        font-family: Arial, sans-serif;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- PATCH FOR PICKLE ---
+# =============================================================================
+# 2. BACKEND LOGIC (UNCHANGED)
+# =============================================================================
+# --- PICKLE PATCH ---
 try:
     import sklearn
     from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor
@@ -72,7 +113,7 @@ class FeatureAwareModel:
 import __main__
 setattr(__main__, "FeatureAwareModel", FeatureAwareModel)
 
-# --- CONSTANTS ---
+# --- SETUP ---
 BASE_MODEL_DIR = "final_models"
 PROPERTIES_DB_PATH = "data/elemental_properties.xlsx"
 PROP_MAP = {"Z":"Atomic_Number", "IE":"Ionization_Energy_kJ_per_mol", "EN":"Electronegativity_Pauling", "EA":"Electron_Affinity_kJ_per_mol", "IR":"Ionic_Radius_pm", "MP":"Melting_Point_C", "BP":"Boiling_Point_C", "AD":"Atomic_Density_g_per_cm3", "HoE":"Heat_of_Evaporation_kJ_per_mol", "HoF":"Heat_of_Fusion_kJ_per_mol"}
@@ -87,9 +128,6 @@ MODELS_CONFIG = {
     "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "dimensionless", "color": "#d62728"}
 }
 
-# =============================================================================
-# 2. LOGIC
-# =============================================================================
 @st.cache_data
 def load_resources():
     elem_props = {}
@@ -123,7 +161,8 @@ def parse_formula(formula):
         elif el in A_SITE: A[el] = amt
         elif el in B_SITE: B[el] = amt
         else: raise ValueError(f"Unknown element: {el}")
-        
+    
+    # Strict checks
     if abs(sum(A.values()) - 1.0) > 0.05: raise ValueError(f"A-site sum is {sum(A.values()):.2f}, must be 1.0")
     if abs(sum(B.values()) - 1.0) > 0.05: raise ValueError(f"B-site sum is {sum(B.values()):.2f}, must be 1.0")
     return A, B
@@ -141,20 +180,26 @@ def prepare_input(model, A, B, T, elem_props):
     return pd.DataFrame(data), tf
 
 # =============================================================================
-# 3. UI LAYOUT
+# 3. UI LAYOUT (MATCHING IMAGE 2)
 # =============================================================================
-st.markdown("<h1 style='text-align: center; margin-bottom: 20px;'>Perovskite TE Predictor</h1>", unsafe_allow_html=True)
 
-# Input Bar
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed", placeholder="Enter Formula...")
-    btn = st.button("Analyze Composition", type="primary", use_container_width=True)
+# A. Header
+st.markdown("<h1>Perovskite TE Predictor</h1>", unsafe_allow_html=True)
 
-# Resources
+# B. Input & Button (Centered using columns)
+# We use [1, 2, 1] to push the input to the center, just like your image
+col_left, col_mid, col_right = st.columns([1, 1.5, 1])
+
+with col_mid:
+    # 1. Formula Input
+    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
+    
+    # 2. Red Button (Full Width of col_mid)
+    btn = st.button("Analyze Composition")
+
+# C. Logic & Plotting
 elem_props = load_resources()
 models = load_models()
-
 status_msg = "System Ready | Waiting for input..."
 
 if btn and elem_props:
@@ -162,7 +207,7 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Grid Layout for Plots
+        # Create Grid for Plots (2x2)
         c1, c2 = st.columns(2)
         c3, c4 = st.columns(2)
         grid_locs = [c1, c2, c3, c4]
@@ -176,7 +221,7 @@ if btn and elem_props:
                 X, tf_val = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # Plotly Chart
+                # PLOTLY SETUP (Clean, Lines+Markers, White BG)
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -187,17 +232,17 @@ if btn and elem_props:
                 ))
                 
                 fig.update_layout(
-                    title=dict(text=cfg['name'], x=0.5, font=dict(size=18)),
-                    xaxis=dict(title="Temperature (K)", showgrid=True, gridcolor='#eee'),
-                    yaxis=dict(title=cfg['unit'], showgrid=True, gridcolor='#eee'),
+                    title=dict(text=cfg['name'], x=0.5, font=dict(size=18, color="#333", family="Arial, sans-serif")),
+                    xaxis=dict(title="Temperature (K)", showgrid=True, gridcolor='#F0F0F0', zeroline=False),
+                    yaxis=dict(title=cfg['unit'], showgrid=True, gridcolor='#F0F0F0', zeroline=False),
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=20, r=20, t=40, b=20),
+                    margin=dict(l=40, r=20, t=50, b=40),
                     height=300
                 )
                 
                 with grid_locs[idx]:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 idx += 1
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | A-Site Sum: 1.00 | B-Site Sum: 1.00"
@@ -206,7 +251,7 @@ if btn and elem_props:
         status_msg = f"Error: {str(e)}"
         st.error(str(e))
 
-# Sticky Status Bar
+# D. Sticky Status Bar
 st.markdown(f"""
 <div class="status-box">
     {status_msg}
