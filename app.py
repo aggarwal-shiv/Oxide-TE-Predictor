@@ -7,99 +7,85 @@ import os
 import plotly.graph_objects as go
 
 # =============================================================================
-# 1. VISUAL CONFIGURATION (CSS)
+# 1. PAGE SETUP & CSS
 # =============================================================================
 st.set_page_config(page_title="Perovskite TE Predictor", layout="wide")
 
 st.markdown("""
 <style>
-    /* --- GLOBAL COLORS --- */
+    /* --- GLOBAL SETTINGS --- */
     .stApp {
         background-color: #F0F2F6; /* Light Blue-Grey Background */
-        color: black;
-        font-family: Arial, sans-serif;
+        color: #172B4D;
+        font-family: 'Segoe UI', Arial, sans-serif;
     }
 
-    /* --- 1. HEADER --- */
+    /* --- LAYOUT CONSTRAINT (The Fix for Aspect Ratio) --- */
+    /* This forces the app to have max width, creating side margins on wide screens */
+    .block-container {
+        max-width: 1200px; 
+        padding-top: 2rem;
+        padding-bottom: 5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin: auto; /* Centers the content */
+    }
+
+    /* --- HEADER --- */
     .custom-header {
         text-align: center;
         font-size: 32px;
-        font-weight: bold;
+        font-weight: 800;
         color: #172B4D;
-        margin-top: -20px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        text-transform: uppercase;
     }
 
-    /* --- 2. INPUT SECTION --- */
-    /* Center the columns for input */
-    div[data-testid="column"] {
-        display: flex;
-        align-items: center;
-    }
-    
-    /* Style Input Box */
+    /* --- INPUT BAR --- */
     div[data-testid="stTextInput"] input {
-        border: 2px solid #ccc;
-        border-radius: 4px;
+        border: 2px solid #DFE1E6;
+        border-radius: 6px;
         text-align: center;
         font-weight: bold;
         font-size: 18px;
-        height: 42px;
+        color: #172B4D;
+        height: 45px;
     }
-
-    /* Style Button (Blue) */
+    
     div.stButton > button {
         background-color: #0052CC;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         font-weight: bold;
         font-size: 16px;
-        height: 42px;
+        height: 45px;
         width: 100%;
     }
     div.stButton > button:hover {
         background-color: #0747a6;
     }
 
-    /* --- 3. PLOT CARDS (The White Boxes) --- */
-    /* This applies to the Plotly chart container */
-    .plot-container {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 10px;
-        margin-bottom: 20px;
-    }
-
-    /* --- 4. BOTTOM STATUS BAR --- */
+    /* --- STATUS BAR --- */
     .status-bar {
         position: fixed;
-        left: 0;
         bottom: 0;
+        left: 0;
         width: 100%;
         background-color: #E1E4E8;
-        border-top: 2px solid #172B4D;
+        border-top: 3px solid #172B4D;
         color: #172B4D;
         text-align: left;
-        padding: 8px 20px;
+        padding: 10px 20px;
         font-size: 14px;
         font-weight: bold;
-        z-index: 99999;
+        z-index: 9999;
     }
 
-    /* --- HIDE DEFAULT STREAMLIT UI --- */
+    /* Hide standard Streamlit chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Adjust top padding */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 5rem;
-        padding-left: 3rem;
-        padding-right: 3rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -217,8 +203,8 @@ if btn and elem_props:
         temps = np.arange(300, 1101, 50)
         
         # Grid Layout (2x2)
-        row1 = st.columns(2)
-        row2 = st.columns(2)
+        row1 = st.columns(2, gap="medium")
+        row2 = st.columns(2, gap="medium")
         grid_locs = row1 + row2 
         
         tf_val = 0
@@ -235,7 +221,6 @@ if btn and elem_props:
                 all_debug_data[cfg['name']] = {"vals": calc_vals, "features": X.iloc[0].to_dict()}
                 
                 # Y-Label construction (Symbol + Unit)
-                # e.g. "S (µV·K⁻¹)"
                 y_title = f"<b>{cfg['symbol']}"
                 if cfg['unit']:
                     y_title += f" ({cfg['unit']})"
@@ -276,26 +261,23 @@ if btn and elem_props:
                     # "Card" Style (White Background)
                     paper_bgcolor='white',
                     plot_bgcolor='white',
+                    # Margins tailored for 16:9 box look
                     margin=dict(l=60, r=20, t=50, b=50),
-                    height=300, # Fixed 16:9ish height for cards
+                    height=300, # Constrained height
+                    autosize=True
                 )
                 
                 with grid_locs[idx]:
-                    # We render the chart normally, the CSS 'plot-container' styling doesn't apply 
-                    # directly to the chart element in Streamlit easily without custom components.
-                    # So we rely on Plotly's paper_bgcolor='white' to create the card look against 
-                    # the grey app background.
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
                 idx += 1
 
-        # Format Status String exactly like the image
-        # "Tolerance Factor: 0.793 | A-site: {'Ca':0.8...} | B-site: {'Ti':1}"
+        # Format Status String
         a_str = str(A).replace("'", "").replace("{", "").replace("}", "")
         b_str = str(B).replace("'", "").replace("{", "").replace("}", "")
         status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site: {{{a_str}}} | B-site: {{{b_str}}}"
         
-        # --- DEBUG LOGS (Hidden by default) ---
+        # --- DEBUG LOGS (Tabs for each model) ---
         with st.expander("Show Debug Logs", expanded=False):
             if all_debug_data:
                 tabs = st.tabs(list(all_debug_data.keys()))
@@ -304,10 +286,10 @@ if btn and elem_props:
                         data = all_debug_data[model_name]
                         c1, c2 = st.columns(2)
                         with c1:
-                            st.write("Calculated Properties")
+                            st.markdown("**Calculated Properties**")
                             st.dataframe(pd.DataFrame.from_dict(data['vals'], orient='index', columns=['Value']))
                         with c2:
-                            st.write("Feature Vector")
+                            st.markdown("**Feature Vector**")
                             st.dataframe(pd.DataFrame([data['features']]))
 
     except Exception as e:
