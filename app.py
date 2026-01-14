@@ -49,7 +49,7 @@ st.markdown("""
 
     /* --- INPUT BAR STYLE --- */
     div[data-testid="stTextInput"] input {
-        border: 2px solid #334155; 
+        border: 5px solid #334155; 
         border-right: none;
         border-radius: 10px 0 0 10px; 
         text-align: center;
@@ -63,7 +63,7 @@ st.markdown("""
     div.stButton > button {
         background-color: #0052CC;
         color: white;
-        border: 2px solid #0052CC;
+        border: 5px solid #0052CC;
         border-radius: 0 10px 10px 0;
         font-weight: 500;
         height: 46px;
@@ -308,5 +308,6 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
