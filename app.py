@@ -7,7 +7,7 @@ import os
 import plotly.graph_objects as go
 
 # =============================================================================
-# 1. VISUAL CONFIGURATION (CSS)
+# 1. VISUAL CONFIGURATION (ZERO-WASTE LAYOUT)
 # =============================================================================
 st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
 
@@ -15,57 +15,68 @@ st.markdown("""
 <style>
     /* --- GLOBAL SETTINGS --- */
     .stApp {
-        background-color: #F0F2F6; 
-        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: #F4F7F9; /* Professional Light Blue-Grey */
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         color: #000000 !important;
     }
 
-    /* --- LAYOUT OPTIMIZATION --- */
+    /* --- AGGRESSIVE SPACING REMOVAL --- */
+    /* This pulls everything to the very top */
     .block-container {
-        padding-top: 1.5rem !important;
-        padding-bottom: 5rem !important;
-        max-width: 1400px; /* Constrain width to prevent stretching */
+        padding-top: 1.5rem !important; 
+        padding-bottom: 1rem !important;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1400px;
         margin: 0 auto;
     }
-
-    /* --- HEADER --- */
-    .custom-header {
-        text-align: center;
-        font-size: 36px;
-        font-weight: 900;
-        color: #1A1A1A;
-        text-transform: uppercase; 
-        margin-bottom: 20px;
-        letter-spacing: 1px;
+    
+    /* Remove default Streamlit gap elements */
+    div[data-testid="stVerticalBlock"] > div {
+        gap: 0.5rem !important; /* Tighten vertical gaps between elements */
     }
 
-    /* --- SEARCH BAR --- */
+    /* --- CLASSY HEADER --- */
+    .custom-header {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 800;
+        color: #111827; /* Dark almost black */
+        text-transform: uppercase;
+        margin-top: -15px; /* Pull Up */
+        margin-bottom: 15px;
+        letter-spacing: 0.5px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* --- COMPACT INPUT BAR --- */
     div[data-testid="stTextInput"] input {
-        border: 2px solid #2C3E50;
+        border: 2px solid #374151; /* Dark Grey Border */
         border-right: none;
         border-radius: 4px 0 0 4px; 
         text-align: center;
         font-weight: 700;
-        color: #2C3E50;
+        color: #111827;
         font-size: 18px;
-        height: 48px;
+        height: 44px;
         background: #FFFFFF;
     }
     
     div.stButton > button {
-        background-color: #0056b3; 
+        background-color: #0052CC; /* Strong Blue */
         color: white;
-        border: 2px solid #0056b3;
+        border: 2px solid #0052CC;
         border-radius: 0 4px 4px 0;
-        font-weight: 800;
-        height: 48px;
+        font-weight: 700;
+        height: 44px;
         width: 100%;
         font-size: 16px;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
     div.stButton > button:hover {
-        background-color: #004494;
+        background-color: #003E99;
+        border-color: #003E99;
     }
 
     /* --- STATUS BAR --- */
@@ -74,12 +85,12 @@ st.markdown("""
         left: 0;
         bottom: 0;
         width: 100%;
-        background-color: #E9ECEF;
-        border-top: 3px solid #2C3E50;
-        color: #2C3E50;
+        background-color: #E5E7EB;
+        border-top: 3px solid #374151;
+        color: #1F2937;
         text-align: left;
-        padding: 10px 40px;
-        font-size: 15px;
+        padding: 8px 40px;
+        font-size: 14px;
         font-weight: 700;
         z-index: 9999;
     }
@@ -184,30 +195,29 @@ def prepare_input(model, A, B, T, elem_props):
 # =============================================================================
 
 # --- HEADER ---
-st.markdown('<div class="custom-header">OXIDE TE-PREDICTOR</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-header">Perovskite TE Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
-c1, c2, c3, c4 = st.columns([2.5, 3, 1, 2.5], gap="small")
-with c2:
+# Tight columns: [Spacer, Input(3), Button(1), Spacer]
+c_space1, c_in, c_btn, c_space2 = st.columns([2.5, 3, 1, 2.5], gap="small")
+with c_in:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
-with c3:
-    btn = st.button("PREDICT")
+with c_btn:
+    btn = st.button("ANALYZE")
 
 # --- MAIN GRID ---
 elem_props = load_resources()
 models = load_models()
-status_msg = "Waiting for input..."
+status_msg = "System Ready"
 
 if btn and elem_props:
     try:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        st.write("") # Visual spacer
-        
-        # Grid Setup
-        row1 = st.columns(2, gap="large")
-        row2 = st.columns(2, gap="large")
+        # Grid Setup (Small gap to maximize space usage)
+        row1 = st.columns(2, gap="medium")
+        row2 = st.columns(2, gap="medium")
         grid_locs = row1 + row2 
         
         tf_val = 0
@@ -236,45 +246,41 @@ if btn and elem_props:
                     marker=dict(size=7, color=cfg['color'], symbol='circle'),
                 ))
                 
-                # --- OPTIMIZED PLOT LAYOUT ---
                 fig.update_layout(
-                    # Title (Centered perfectly)
+                    # Title
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
-                        x=0.5, # Absolute Center
+                        x=0.5,
+                        y=0.94, # Close to top edge
                         xanchor='center',
-                        y=0.96, # Push slightly to top to save space
-                        font=dict(size=18, color="black", family="Arial Black")
+                        font=dict(size=18, color="#111827", family="Segoe UI Black")
                     ),
                     # X-Axis
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial Black")),
-                        tickfont=dict(size=12, color="black", family="Arial Black"),
-                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Segoe UI Black")),
+                        tickfont=dict(size=12, color="black", family="Segoe UI"),
+                        showgrid=True, gridcolor='#E5E7EB', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
                     # Y-Axis
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=14, color="black", family="Arial Black")),
-                        tickfont=dict(size=12, color="black", family="Arial Black"),
-                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
+                        title=dict(text=y_label, font=dict(size=14, color="black", family="Segoe UI Black")),
+                        tickfont=dict(size=12, color="black", family="Segoe UI"),
+                        showgrid=True, gridcolor='#E5E7EB', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
-                    # TIGHT MARGINS to Fill the Card
-                    margin=dict(l=60, r=20, t=40, b=40),
-                    
-                    # Box Style
+                    # Box Style & Margins
                     paper_bgcolor='white',
                     plot_bgcolor='white',
+                    margin=dict(l=60, r=20, t=50, b=50),
                     
-                    # Size
-                    height=300, 
+                    # MAXIMIZED HEIGHT (Fills the screen)
+                    height=380, 
                 )
                 
                 with grid_locs[idx]:
-                    # use_container_width=True allows it to fill the column width perfectly
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 idx += 1
 
