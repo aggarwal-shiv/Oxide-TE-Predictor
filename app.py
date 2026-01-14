@@ -99,8 +99,8 @@ PROP_MAP = {
     "MP":  "Melting_Point_C",
     "BP":  "Boiling_Point_C",
     "AD":  "Atomic_Density_g_per_cm3",
-    "HoE": "Heat_of_Evaporation_kJ_per_mol",   # Most common correct name
-    "HoF": "Heat_of_Fusion_kJ_per_mol"
+    "HE": "Heat_of_Evaporation_kJ_per_mol",   # Most common correct name
+    "HF": "Heat_of_Fusion_kJ_per_mol"
 }
 
 A_SITE = {"Ca","Sr","Ba","Pb","La","Nd","Sm","Gd","Dy","Ho","Eu","Pr","Na","K","Ce","Bi","Er","Yb","Cu","Y","In","Sb"}
@@ -261,5 +261,6 @@ if btn:
 #                   STATUS BAR
 # ────────────────────────────────────────────────
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
