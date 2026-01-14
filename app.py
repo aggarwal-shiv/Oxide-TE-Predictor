@@ -39,7 +39,7 @@ st.markdown("""
     .custom-header {
         text-align: center;
         font-size: 36px;
-        font-weight: 200; /* Extra Bold */
+        font-weight: 500; /* Extra Bold */
         color: #0F172A; /* Deep Navy Black */
         margin-top: 5px; /* Tiny buffer from window edge */
         margin-bottom: 5px;
@@ -51,11 +51,11 @@ st.markdown("""
     div[data-testid="stTextInput"] input {
         border: 2px solid #334155; 
         border-right: none;
-        border-radius: 4px 0 0 4px; 
+        border-radius: 10px 0 0 10px; 
         text-align: center;
         font-weight: 700;
         color: #0F172A;
-        font-size: 18px;
+        font-size: 22px;
         height: 46px;
         background: #FFFFFF;
     }
@@ -64,11 +64,11 @@ st.markdown("""
         background-color: #0052CC;
         color: white;
         border: 2px solid #0052CC;
-        border-radius: 0 4px 4px 0;
-        font-weight: 700;
+        border-radius: 0 10px 10px 0;
+        font-weight: 500;
         height: 46px;
         width: 100%;
-        font-size: 16px;
+        font-size: 22px;
         letter-spacing: 0.5px;
     }
     div.stButton > button:hover {
@@ -308,4 +308,5 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
