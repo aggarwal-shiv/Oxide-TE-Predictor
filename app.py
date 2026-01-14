@@ -7,97 +7,84 @@ import os
 import plotly.graph_objects as go
 
 # =============================================================================
-# 1. CSS & PAGE CONFIG (EXACTLY MATCHING YOUR HTML)
+# 1. VISUAL CONFIGURATION (CSS)
 # =============================================================================
 st.set_page_config(page_title="Perovskite TE Predictor", layout="wide")
 
 st.markdown("""
 <style>
-    /* ================= GLOBAL ================= */
+    /* --- GLOBAL SETTINGS --- */
     .stApp {
-        background-color: #F5F7FA; /* HTML Body Background */
-        font-family: Arial, Helvetica, sans-serif;
-        color: #172B4D;
-        font-weight: bold;
+        background-color: #F0F2F6; 
+        font-family: 'Arial', sans-serif;
+        color: #000000;
     }
 
-    /* Remove Streamlit default top padding */
+    /* --- LAYOUT CONSTRAINT --- */
     .block-container {
-        padding-top: 1rem;
-        padding-bottom: 5rem;
-        max-width: 1200px; /* Constrain width to keep grid tight */
+        padding-top: 2rem;
+        padding-bottom: 6rem;
+        max-width: 1400px;    
+        margin: 0 auto;
     }
 
-    /* ================= HEADER ================= */
+    /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        padding: 10px 0 6px;
-        font-size: 26px;
-        font-weight: bold;
-        color: #000000;
-        margin-bottom: 10px;
+        font-size: 32px;
+        font-weight: 800;
+        color: #172B4D;
+        text-transform: uppercase; 
+        margin-bottom: 25px;
+        letter-spacing: 0.5px;
+        font-family: 'Arial Black', sans-serif;
     }
 
-    /* ================= INPUT BAR ================= */
-    /* Input Box Styling */
+    /* --- INPUT SECTION --- */
     div[data-testid="stTextInput"] input {
-        font-size: 20px;
-        padding: 5px 10px;
+        border: 1px solid #B3B3B3;
+        border-radius: 4px 0 0 4px; 
         text-align: center;
         font-weight: bold;
-        border: 1px solid #ccc; /* Standard border */
-        border-radius: 3px;
         color: #172B4D;
-        height: 42px;
+        font-size: 18px;
+        height: 46px;
+        background: #FFFFFF;
     }
     
-    /* Button Styling (Exact match to HTML button) */
     div.stButton > button {
-        font-size: 16px;
-        padding: 6px 16px;
-        background-color: #0052CC;
+        background-color: #0052CC; 
         color: white;
         border: none;
-        border-radius: 3px;
-        cursor: pointer;
+        border-radius: 0 4px 4px 0; 
         font-weight: bold;
-        height: 42px;
+        height: 46px;
         width: 100%;
-        margin-top: 0px;
+        font-size: 16px;
+        text-transform: uppercase;
     }
     div.stButton > button:hover {
-        background-color: #003d99;
+        background-color: #0747a6;
     }
 
-    /* ================= CARDS (THE WHITE BOXES) ================= */
-    /* This targets the Plotly Chart container in Streamlit to look like .plot-card */
-    div[data-testid="stPlotlyChart"] {
-        background-color: white;
-        border-radius: 6px;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-        padding: 6px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: center; /* Center the plot inside the card */
-    }
-
-    /* ================= STATUS BAR ================= */
+    /* --- STATUS BAR --- */
     .status-bar {
         position: fixed;
-        bottom: 0;
         left: 0;
+        bottom: 0;
         width: 100%;
         background-color: #E1E4E8;
-        padding: 6px 14px;
-        font-size: 16px;
-        border-top: 2px solid #000;
-        z-index: 1000;
+        border-top: 3px solid #172B4D;
         color: #172B4D;
+        text-align: left;
+        padding: 12px 30px;
+        font-size: 15px;
         font-weight: bold;
-        text-align: center; /* Streamlit specific centering */
+        z-index: 9999;
+        font-family: 'Arial', sans-serif;
     }
 
-    /* Hide Default Streamlit Elements */
+    /* Hide standard elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -197,29 +184,28 @@ def prepare_input(model, A, B, T, elem_props):
 # =============================================================================
 
 # --- HEADER ---
-st.markdown('<div class="custom-header">Perovskite TE Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-header">PEROVSKITE TE PREDICTOR</div>', unsafe_allow_html=True)
 
-# --- INPUT BAR (Centered, imitating flex gap) ---
-c_left, c_input, c_btn, c_right = st.columns([2.5, 3, 1, 2.5], gap="small")
-
-with c_input:
+# --- INPUT BAR ---
+c1, c2, c3, c4 = st.columns([3, 4, 1, 3], gap="small")
+with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
-with c_btn:
+with c3:
     btn = st.button("Analyze")
 
-# --- MAIN LOGIC ---
+# --- MAIN GRID ---
 elem_props = load_resources()
 models = load_models()
-status_msg = "System Ready"
+status_msg = "Waiting for input..."
 
 if btn and elem_props:
     try:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Grid Layout (2x2)
-        row1 = st.columns(2)
-        row2 = st.columns(2)
+        # Larger gap for distinct "Card" separation
+        row1 = st.columns(2, gap="large")
+        row2 = st.columns(2, gap="large")
         grid_locs = row1 + row2 
         
         tf_val = 0
@@ -234,7 +220,7 @@ if btn and elem_props:
                 
                 all_debug_data[cfg['name']] = {"vals": calc_vals, "features": X.iloc[0].to_dict()}
                 
-                # Y-Label (Symbol + Unit)
+                # Y-Label
                 y_label = f"<b>{cfg['symbol']}"
                 if cfg['unit']:
                     y_label += f" ({cfg['unit']})"
@@ -248,51 +234,71 @@ if btn and elem_props:
                     marker=dict(size=6, color=cfg['color']),
                 ))
                 
-                # --- EXACT PLOTLY LAYOUT FROM YOUR JS ---
+                # --- PRECISE AXIS & FONT CONFIGURATION ---
                 fig.update_layout(
-                    # Matches JS "plot-title"
+                    # Global Font Settings (Arial, Bold, Black)
+                    font=dict(family="Arial", size=14, color="black"),
+                    
+                    # Title
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        font=dict(size=18, family="Arial, Helvetica, sans-serif", color="#000")
+                        y=0.9, # Slight push down
+                        font=dict(size=16)
                     ),
-                    # Matches JS xaxis/yaxis settings
+                    
+                    # X-Axis (Full Box, No Grid, Outward Ticks)
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=18)),
-                        tickfont=dict(size=16, color="black"),
-                        showline=True, linewidth=2, linecolor='black',
-                        mirror=True, ticks="outside", tickwidth=2,
-                        showgrid=False # HTML JS doesn't explicitly show grid, usually off or default
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14)),
+                        showgrid=False,       # NO GRID
+                        showline=True,        # Show Axis Line
+                        linewidth=2,          # Thicker Line (Spine)
+                        linecolor='black',    # Black Spine
+                        mirror=True,          # Mirror to Top/Right (Complete Box)
+                        ticks="outside",      # Ticks point out
+                        tickwidth=2,
+                        tickcolor='black',
+                        ticklen=6,
+                        tickfont=dict(size=12, color="black", family="Arial")
                     ),
+                    
+                    # Y-Axis (Full Box, No Grid, Outward Ticks)
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=18)),
-                        tickfont=dict(size=16, color="black"),
-                        showline=True, linewidth=2, linecolor='black',
-                        mirror=True, ticks="outside", tickwidth=2,
-                        showgrid=False
+                        title=dict(text=y_label, font=dict(size=14)),
+                        showgrid=False,       # NO GRID
+                        showline=True,        # Show Axis Line
+                        linewidth=2,          # Thicker Line
+                        linecolor='black',    # Black Spine
+                        mirror=True,          # Mirror to Right (Complete Box)
+                        ticks="outside",      # Ticks point out
+                        tickwidth=2,
+                        tickcolor='black',
+                        ticklen=6,
+                        tickfont=dict(size=12, color="black", family="Arial")
                     ),
+                    
+                    # Plot Background
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    # Matches JS margin: { t: 30, l: 85, r: 20, b: 70 } (approx)
-                    margin=dict(t=40, l=85, r=20, b=70),
                     
-                    # Matches JS fixed size: width 560, height 315
-                    width=560,
-                    height=315
+                    # Margins (Prevent label cutting)
+                    margin=dict(l=70, r=20, t=50, b=50),
+                    
+                    # Size (16:9 Aspect Ratio)
+                    height=250, 
                 )
                 
                 with grid_locs[idx]:
-                    # use_container_width=False forces the exact 560x315 size
-                    st.plotly_chart(fig, use_container_width=False, config={'displayModeBar': False})
+                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
                 idx += 1
 
-        # Status String
+        # Status
         a_str = str(A).replace("'", "").replace("{", "").replace("}", "")
         b_str = str(B).replace("'", "").replace("{", "").replace("}", "")
         status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site: {{{a_str}}} | B-site: {{{b_str}}}"
         
-        # --- DEBUG LOGS (Preserved) ---
+        # --- DEBUG LOGS ---
         with st.expander("Show Debug Logs", expanded=False):
             if all_debug_data:
                 tabs = st.tabs(list(all_debug_data.keys()))
