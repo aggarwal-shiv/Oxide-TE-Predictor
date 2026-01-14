@@ -17,12 +17,12 @@ st.markdown("""
     .stApp {
         background-color: #F5F7FA;
         font-family: Arial, Helvetica, sans-serif;
-        color: black; /* Force black text globally */
+        color: black;
     }
     
-    /* --- REMOVE TOP PADDING (Fixes the white space issue) --- */
+    /* --- REMOVE TOP PADDING --- */
     .block-container {
-        padding-top: 0.5rem !important; /* Minimized top space */
+        padding-top: 0.5rem !important;
         padding-bottom: 5rem;
         padding-left: 2rem;
         padding-right: 2rem;
@@ -32,26 +32,24 @@ st.markdown("""
     /* --- HEADER STYLE --- */
     .custom-header {
         text-align: center;
-        font-size: 28px; /* +4px larger */
+        font-size: 28px;
         font-weight: 900;
         color: #000000;
         margin-bottom: 15px;
-        background: transparent; /* No white box */
+        background: transparent;
     }
 
     /* --- INPUT BAR STYLE --- */
-    /* Input Box */
     div[data-testid="stTextInput"] input {
-        border: 2px solid #000000; /* Black border */
+        border: 2px solid #000000;
         border-radius: 4px;
         text-align: center;
         font-weight: bold;
-        font-size: 20px; /* +4px larger */
+        font-size: 20px;
         color: black;
         padding: 8px 12px;
     }
     
-    /* Button */
     div.stButton > button {
         background-color: #0052CC;
         color: white;
@@ -59,9 +57,9 @@ st.markdown("""
         border: 2px solid #0052CC;
         border-radius: 4px;
         padding: 10px 0px;
-        font-size: 20px; /* +4px larger */
+        font-size: 20px;
         width: 100%;
-        margin-top: 0px; /* Align with input */
+        margin-top: 0px;
     }
     div.stButton > button:hover {
         background-color: #0747a6;
@@ -79,7 +77,7 @@ st.markdown("""
         color: #000000;
         text-align: center;
         padding: 12px;
-        font-size: 18px; /* +4px larger */
+        font-size: 18px;
         font-weight: bold;
         z-index: 9999;
     }
@@ -126,7 +124,7 @@ MODELS_CONFIG = {
     "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "unit": "μV/K", "color": "#1f77b4"},
     "Sigma": {"file": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl", "name": "Electrical Conductivity", "unit": "S/cm", "color": "#ff7f0e"},
     "Kappa": {"file": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl", "name": "Thermal Conductivity", "unit": "W/m·K", "color": "#2ca02c"},
-    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "", "color": "#d62728"} # Unit empty for zT to avoid duplication
+    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "", "color": "#d62728"}
 }
 
 @st.cache_data
@@ -183,11 +181,10 @@ def prepare_input(model, A, B, T, elem_props):
 # 3. UI LAYOUT
 # =============================================================================
 
-# --- A. HEADER (No white box, just text) ---
+# --- HEADER ---
 st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
 
-# --- B. INPUT BAR (Centered, Predict Button) ---
-# [Spacer, Input(3), Button(1), Spacer]
+# --- INPUT BAR ---
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
 
 with c_input:
@@ -196,7 +193,7 @@ with c_input:
 with c_btn:
     btn = st.button("Predict")
 
-# --- C. MAIN GRID LOGIC ---
+# --- MAIN GRID ---
 elem_props = load_resources()
 models = load_models()
 status_msg = "System Ready"
@@ -206,14 +203,13 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Grid Setup
         row1 = st.columns(2, gap="medium")
         row2 = st.columns(2, gap="medium")
         grid_locs = row1 + row2 
         
         tf_val = 0
         idx = 0
-        debug_vals = {} # To store data for error log
+        debug_vals = {}
         
         for key in ["S", "Sigma", "Kappa", "zT"]:
             if key in models:
@@ -221,10 +217,9 @@ if btn and elem_props:
                 X, tf_val = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # Capture debug info for the first model loop
                 if idx == 0: debug_vals = {"A": A, "B": B, "X_sample": X.iloc[0].to_dict()}
                 
-                # --- PLOTLY CONFIG (BLACK AXIS & 16:9) ---
+                # --- PLOTLY CONFIG (FIXED SYNTAX & BLACK COLORS) ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -233,57 +228,54 @@ if btn and elem_props:
                     marker=dict(size=8, color=cfg['color']),
                 ))
                 
-                # Y-Label construction (Name + Unit)
-                y_label_text = f"<b>{cfg['name']}</b>"
+                # Construct Label: "Name (Unit)"
+                full_label = f"<b>{cfg['name']}</b>"
                 if cfg['unit']:
-                    y_label_text += f" <b>({cfg['unit']})</b>"
+                    full_label += f" <b>({cfg['unit']})</b>"
                 
                 fig.update_layout(
-                    # Title
+                    # Title (Name at top)
                     title=dict(
-                        text=y_label_text, 
-                        x=0.5, 
-                        font=dict(size=18, color="#000000", family="Arial Black")
+                        text=full_label,
+                        x=0.5,
+                        font=dict(size=18, color="black", family="Arial Black")
                     ),
-                    # X-Axis (Pure Black)
+                    # X-Axis (Fixed 'titlefont' error by nesting 'font' in 'title')
                     xaxis=dict(
-                        title="<b>Temperature (K)</b>", 
-                        titlefont=dict(size=16, color="black"),
+                        title=dict(
+                            text="<b>Temperature (K)</b>",
+                            font=dict(size=16, color="black")
+                        ),
                         tickfont=dict(size=14, color="black"),
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Y-Axis (Pure Black)
+                    # Y-Axis (Fixed 'titlefont' error + Added Units)
                     yaxis=dict(
-                        # We use the title in update_layout instead of axis title for cleaner look, 
-                        # but user asked for "property name" in Y label. 
-                        # Let's put unit on axis title if preferred, or keep title at top.
-                        # User asked: "add the propty name (mens symbol ) as in the previous code."
-                        # I combined them in the Chart Title above for best visibility.
+                        title=dict(
+                            text=f"<b>{cfg['unit']}</b>", 
+                            font=dict(size=16, color="black")
+                        ),
+                        tickfont=dict(size=14, color="black"),
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
-                        mirror=True, ticks="outside", tickcolor="black", tickwidth=2,
-                        tickfont=dict(size=14, color="black")
+                        mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # BOX CARD EFFECT
+                    # Box Style & Ratio
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=50, r=30, t=50, b=50),
-                    
-                    # 16:9 ASPECT RATIO ENFORCEMENT
-                    # Width is dynamic (column width), so we fix height to a 16:9 proportion of a typical column.
+                    margin=dict(l=60, r=30, t=50, b=50),
                     height=360, 
                 )
                 
                 with grid_locs[idx]:
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-                    
                 idx += 1
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
-        # --- RESTORED ERROR / DEBUG LOG ---
+        # --- DEBUG LOGS ---
         with st.expander("Show Debug Logs (Internal Calculations)", expanded=False):
             st.write("### Calculated Composition")
             c1, c2 = st.columns(2)
@@ -291,7 +283,6 @@ if btn and elem_props:
             c1.write(debug_vals.get("A"))
             c2.write("**B-Site:**")
             c2.write(debug_vals.get("B"))
-            
             st.write("### Feature Vector (First Row)")
             st.dataframe(pd.DataFrame([debug_vals.get("X_sample", {})]))
 
@@ -299,5 +290,5 @@ if btn and elem_props:
         status_msg = f"Error: {str(e)}"
         st.error(str(e))
 
-# --- D. STATUS BAR ---
+# --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
