@@ -39,10 +39,10 @@ st.markdown("""
     .custom-header {
         text-align: center;
         font-size: 36px;
-        font-weight: 800; /* Extra Bold */
+        font-weight: 200; /* Extra Bold */
         color: #0F172A; /* Deep Navy Black */
-        margin-top: 10px; /* Tiny buffer from window edge */
-        margin-bottom: 10px;
+        margin-top: 5px; /* Tiny buffer from window edge */
+        margin-bottom: 5px;
         letter-spacing: 0px;
         font-family: 'Arial', sans-serif;
     }
@@ -87,7 +87,7 @@ st.markdown("""
         color: #334155;
         text-align: left;
         padding: 8px 30px;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 700;
         z-index: 9999;
         font-family: 'Arial', sans-serif;
@@ -308,3 +308,4 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
