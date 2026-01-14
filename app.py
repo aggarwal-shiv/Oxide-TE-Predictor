@@ -260,21 +260,58 @@ if predict_btn:
                 ))
 
                 fig.update_layout(
-                    title=cfg["name"],
-                    title_x=0.5,
-                    title_font=dict(size=20, color="#111827"),
-                    xaxis_title="Temperature (K)",
-                    yaxis_title=f"{cfg['unit']}",
-                    height=360,
-                    margin=dict(l=50, r=30, t=60, b=60),
-                    plot_bgcolor="white",
-                    paper_bgcolor="white",
-                    font=dict(family="Inter", color="#374151"),
-                    showlegend=False,
-                    hovermode="x unified",
-                    xaxis=dict(showline=True, linewidth=1.4, linecolor='#4b5563', mirror=True, gridcolor='rgba(209,213,219,0.5)'),
-                    yaxis=dict(showline=True, linewidth=1.4, linecolor='#4b5563', mirror=True, gridcolor='rgba(209,213,219,0.5)')
-                )
+                # ── Title ───────────────────────────────────────
+                title=dict(
+                    text=property_name,
+                    x=0.5,
+                    font=dict(size=21, color='#111827', family="Inter"),
+                    pad=dict(t=6, b=8)
+                ),
+                
+                # ── Axis titles ─────────────────────────────────
+                xaxis_title=dict(
+                    text="Temperature (K)",
+                    font=dict(size=15, color='#374151')
+                ),
+                yaxis_title=dict(
+                    text=f"{unit}",
+                    font=dict(size=15, color='#374151')
+                ),
+                
+                # ── Tick labels ─────────────────────────────────
+                font=dict(family="Inter", size=12.5, color="#374151"),
+                
+                # ── Very compact but readable ───────────────────
+                height=340,                        # ← key value for 4 plots on screen
+                margin=dict(l=50, r=25, t=55, b=55),
+                
+                # ── Scientific style spines ─────────────────────
+                xaxis=dict(
+                    showline=True,
+                    linewidth=1.5,
+                    linecolor='#4b5563',
+                    mirror=True,
+                    ticks="outside",
+                    tickwidth=1.4,
+                    gridcolor='rgba(209,213,219,0.55)',
+                    zeroline=False
+                ),
+                yaxis=dict(
+                    showline=True,
+                    linewidth=1.5,
+                    linecolor='#4b5563',
+                    mirror=True,
+                    ticks="outside",
+                    tickwidth=1.4,
+                    gridcolor='rgba(209,213,219,0.55)',
+                    zeroline=False
+                ),
+                
+                plot_bgcolor="white",
+                paper_bgcolor="white",
+                showlegend=False,
+                hovermode="x unified"
+            )
 
                 with all_cols[i]:
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
@@ -289,3 +326,4 @@ if predict_btn:
 #                   STATUS BAR
 # ────────────────────────────────────────────────
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
