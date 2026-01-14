@@ -15,66 +15,65 @@ st.markdown("""
 <style>
     /* --- GLOBAL SETTINGS --- */
     .stApp {
-        background-color: #F4F6F9; /* Classic scientific grey-blue */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #F4F7F6; /* Clean Scientific Grey */
+        font-family: 'Segoe UI', sans-serif;
         color: #000000 !important;
     }
 
-    /* --- LAYOUT OPTIMIZATION --- */
+    /* --- LAYOUT CONSTRAINT (Fixes Stretching) --- */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1rem !important;  /* Minimized Top Space */
         padding-bottom: 3rem !important;
-        padding-left: 3rem;
-        padding-right: 3rem;
-        max-width: 1400px;
+        max-width: 1200px; /* Reduced width to force taller, non-stretched plots */
         margin: 0 auto;
     }
 
     /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 34px;
-        font-weight: 800;
+        font-size: 38px;
+        font-weight: 900;
         color: #1A1A1A;
         text-transform: uppercase; 
-        margin-bottom: 20px;
-        letter-spacing: 1.5px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        margin-top: -10px;
+        margin-bottom: 25px;
+        letter-spacing: 1px;
     }
 
-    /* --- SEARCH BAR CONTAINER --- */
-    /* Make the input and button look like a single unit */
+    /* --- SEARCH BAR STYLING --- */
+    /* Input Box */
     div[data-testid="stTextInput"] input {
         border: 2px solid #2C3E50;
-        border-radius: 4px; 
+        border-right: none; /* Merge with button */
+        border-radius: 6px 0 0 6px; 
         text-align: center;
         font-weight: 700;
         color: #2C3E50;
-        font-size: 18px;
-        height: 48px;
+        font-size: 20px;
+        height: 50px;
         background: #FFFFFF;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
+    /* Button */
     div.stButton > button {
-        background-color: #0056b3; /* Classic Strong Blue */
+        background-color: #0056b3; 
         color: white;
         border: 2px solid #0056b3;
-        border-radius: 4px;
+        border-radius: 0 6px 6px 0;
         font-weight: 800;
-        height: 48px;
+        height: 50px;
         width: 100%;
-        font-size: 16px;
+        font-size: 18px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         transition: all 0.2s ease;
     }
     div.stButton > button:hover {
         background-color: #004494;
         border-color: #004494;
         transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
     }
 
     /* --- STATUS BAR --- */
@@ -88,10 +87,9 @@ st.markdown("""
         color: #2C3E50;
         text-align: left;
         padding: 10px 40px;
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 700;
         z-index: 9999;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
     }
 
     /* Hide standard elements */
@@ -194,11 +192,10 @@ def prepare_input(model, A, B, T, elem_props):
 # =============================================================================
 
 # --- HEADER ---
-st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-header">OXIDE TE-PREDICTOR</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
-# Adjusted columns to center and size the input/button perfectly
-c1, c2, c3, c4 = st.columns([3, 4, 1.2, 3], gap="small")
+c1, c2, c3, c4 = st.columns([2, 4, 1.2, 2], gap="small")
 with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 with c3:
@@ -253,21 +250,21 @@ if btn and elem_props:
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        y=0.92, 
-                        font=dict(size=18, color="black", family="Arial Black")
+                        y=0.9, 
+                        font=dict(size=20, color="#1A1A1A", family="Arial Black")
                     ),
                     # X-Axis
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial Black")),
-                        tickfont=dict(size=12, color="black", family="Arial Black"),
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=16, color="black", family="Arial Black")),
+                        tickfont=dict(size=14, color="black", family="Arial Black"),
                         showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
                     # Y-Axis
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=14, color="black", family="Arial Black")),
-                        tickfont=dict(size=12, color="black", family="Arial Black"),
+                        title=dict(text=y_label, font=dict(size=16, color="black", family="Arial Black")),
+                        tickfont=dict(size=14, color="black", family="Arial Black"),
                         showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
@@ -275,10 +272,10 @@ if btn and elem_props:
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=65, r=20, t=50, b=50),
+                    margin=dict(l=75, r=20, t=80, b=60), # Increased Top Margin (t=80) fixes Title Overlap
                     
-                    # HEIGHT ADJUSTMENT (Increased to fill vertical space)
-                    height=320, 
+                    # HEIGHT ADJUSTMENT
+                    height=340, # Taller height + Restricted Width = Correct 16:9 Look
                 )
                 
                 with grid_locs[idx]:
