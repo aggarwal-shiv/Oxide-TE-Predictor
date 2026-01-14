@@ -22,7 +22,7 @@ st.markdown("""
 
     /* --- LAYOUT COMPRESSION (Remove whitespace) --- */
     .block-container {
-        padding-top: 1rem !important; /* Minimize top space */
+        padding-top: 2rem !important; /* Minimize top space */
         padding-bottom: 2rem !important; /* Minimize bottom space */
         padding-left: 2rem;
         padding-right: 2rem;
@@ -36,7 +36,7 @@ st.markdown("""
         font-size: 36px;
         font-weight: 900; /* Extra Bold */
         color: #000000;
-        text-transform: uppercase; 
+    
         margin-bottom: 10px; /* Pull input bar closer */
         letter-spacing: 1px;
         font-family: 'Arial Black', sans-serif;
@@ -193,7 +193,7 @@ c1, c2, c3, c4 = st.columns([3, 4, 1, 3], gap="small")
 with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 with c3:
-    btn = st.button("ANALYZE")
+    btn = st.button("Predict")
 
 # --- MAIN GRID ---
 elem_props = load_resources()
@@ -302,3 +302,4 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
