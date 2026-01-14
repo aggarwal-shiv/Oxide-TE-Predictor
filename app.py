@@ -272,10 +272,10 @@ if btn and elem_props:
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=50, r=20, t=30, b=30),
+                    margin=dict(l=50, r=20, t=50, b=10),
                     
                     # HEIGHT ADJUSTMENT (400px fills the rest of the screen)
-                    height=400, 
+                    height=380, 
                 )
                 
                 with grid_locs[idx]:
@@ -308,6 +308,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
