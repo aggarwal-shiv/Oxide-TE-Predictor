@@ -20,26 +20,25 @@ st.markdown("""
         color: black;
     }
     
-    /* --- REMOVE TOP PADDING --- */
+    /* --- MARGINS (Space Left & Right) --- */
     .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 5rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
+        padding-left: 5rem !important;  /* Added space left */
+        padding-right: 5rem !important; /* Added space right */
         max-width: 100%;
     }
 
-    /* --- HEADER STYLE --- */
+    /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 900;
         color: #000000;
-        margin-bottom: 15px;
-        background: transparent;
+        margin-bottom: 20px;
     }
 
-    /* --- INPUT BAR STYLE --- */
+    /* --- INPUT BAR --- */
     div[data-testid="stTextInput"] input {
         border: 2px solid #000000;
         border-radius: 4px;
@@ -47,7 +46,6 @@ st.markdown("""
         font-weight: bold;
         font-size: 20px;
         color: black;
-        padding: 8px 12px;
     }
     
     div.stButton > button {
@@ -56,10 +54,10 @@ st.markdown("""
         font-weight: bold;
         border: 2px solid #0052CC;
         border-radius: 4px;
-        padding: 10px 0px;
         font-size: 20px;
+        height: 50px;
         width: 100%;
-        margin-top: 0px;
+        margin-top: 0px; 
     }
     div.stButton > button:hover {
         background-color: #0747a6;
@@ -82,7 +80,7 @@ st.markdown("""
         z-index: 9999;
     }
 
-    /* Hide standard Streamlit chrome */
+    /* Hide standard Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -124,7 +122,7 @@ MODELS_CONFIG = {
     "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "unit": "μV/K", "color": "#1f77b4"},
     "Sigma": {"file": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl", "name": "Electrical Conductivity", "unit": "S/cm", "color": "#ff7f0e"},
     "Kappa": {"file": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl", "name": "Thermal Conductivity", "unit": "W/m·K", "color": "#2ca02c"},
-    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "", "color": "#d62728"}
+    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "dimensionless", "color": "#d62728"}
 }
 
 @st.cache_data
@@ -175,7 +173,9 @@ def prepare_input(model, A, B, T, elem_props):
     tf = (vals["IR_A"] + 140.0) / (1.414 * (vals["IR_B"] + 140.0))
     vals["Tf"], vals["τ"] = tf, tf
     data = {col: (T if col == "T" else np.full(N, vals.get(col, 0))) for col in req}
-    return pd.DataFrame(data), tf
+    
+    # Return vals as well for debugging
+    return pd.DataFrame(data), tf, vals
 
 # =============================================================================
 # 3. UI LAYOUT
@@ -188,7 +188,7 @@ st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
 
 with c_input:
-    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed", placeholder="Enter Formula...")
+    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 
 with c_btn:
     btn = st.button("Predict")
@@ -203,23 +203,32 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        row1 = st.columns(2, gap="medium")
-        row2 = st.columns(2, gap="medium")
+        # Increased gap="large" for spacing between plots
+        row1 = st.columns(2, gap="large")
+        row2 = st.columns(2, gap="large")
         grid_locs = row1 + row2 
         
         tf_val = 0
         idx = 0
+        
+        # Storage for debug log
         debug_vals = {}
+        debug_features = None
         
         for key in ["S", "Sigma", "Kappa", "zT"]:
             if key in models:
                 cfg = MODELS_CONFIG[key]
-                X, tf_val = prepare_input(models[key], A, B, temps, elem_props)
+                
+                # Capture 'vals' (intermediate calcs) here
+                X, tf_val, calc_vals = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                if idx == 0: debug_vals = {"A": A, "B": B, "X_sample": X.iloc[0].to_dict()}
+                # Save first model's details for debug log
+                if idx == 0:
+                    debug_vals = calc_vals
+                    debug_features = X.iloc[0].to_dict()
                 
-                # --- PLOTLY CONFIG (FIXED SYNTAX & BLACK COLORS) ---
+                # --- PLOTLY CONFIG ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -228,45 +237,39 @@ if btn and elem_props:
                     marker=dict(size=8, color=cfg['color']),
                 ))
                 
-                # Construct Label: "Name (Unit)"
-                full_label = f"<b>{cfg['name']}</b>"
+                # Y-Label: Name + Unit
+                y_text = f"<b>{cfg['name']}</b>"
                 if cfg['unit']:
-                    full_label += f" <b>({cfg['unit']})</b>"
+                    y_text += f" <b>({cfg['unit']})</b>"
                 
                 fig.update_layout(
-                    # Title (Name at top)
+                    # Title (Name at top center)
                     title=dict(
-                        text=full_label,
+                        text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        font=dict(size=18, color="black", family="Arial Black")
+                        font=dict(size=20, color="black", family="Arial Black")
                     ),
-                    # X-Axis (Fixed 'titlefont' error by nesting 'font' in 'title')
+                    # X-Axis
                     xaxis=dict(
-                        title=dict(
-                            text="<b>Temperature (K)</b>",
-                            font=dict(size=16, color="black")
-                        ),
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=18, color="black")),
                         tickfont=dict(size=14, color="black"),
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Y-Axis (Fixed 'titlefont' error + Added Units)
+                    # Y-Axis (Property Name + Unit on the side)
                     yaxis=dict(
-                        title=dict(
-                            text=f"<b>{cfg['unit']}</b>", 
-                            font=dict(size=16, color="black")
-                        ),
+                        title=dict(text=y_text, font=dict(size=18, color="black")),
                         tickfont=dict(size=14, color="black"),
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Box Style & Ratio
+                    # Formatting
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=60, r=30, t=50, b=50),
-                    height=360, 
+                    margin=dict(l=70, r=30, t=60, b=60),
+                    height=340, # Fixed Height for aspect ratio
                 )
                 
                 with grid_locs[idx]:
@@ -275,16 +278,22 @@ if btn and elem_props:
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
-        # --- DEBUG LOGS ---
+        # --- DEBUG LOGS (RESTORED) ---
         with st.expander("Show Debug Logs (Internal Calculations)", expanded=False):
-            st.write("### Calculated Composition")
-            c1, c2 = st.columns(2)
-            c1.write("**A-Site:**")
-            c1.write(debug_vals.get("A"))
-            c2.write("**B-Site:**")
-            c2.write(debug_vals.get("B"))
-            st.write("### Feature Vector (First Row)")
-            st.dataframe(pd.DataFrame([debug_vals.get("X_sample", {})]))
+            st.markdown("### 1. Composition Analysis")
+            d1, d2 = st.columns(2)
+            d1.write("**A-Site Elements:**")
+            d1.write(A)
+            d2.write("**B-Site Elements:**")
+            d2.write(B)
+            
+            st.markdown("### 2. Calculated Descriptors (Weighted Averages)")
+            if debug_vals:
+                st.dataframe(pd.DataFrame.from_dict(debug_vals, orient='index', columns=['Value']))
+                
+            st.markdown("### 3. Final Feature Vector (First Row)")
+            if debug_features:
+                st.dataframe(pd.DataFrame([debug_features]))
 
     except Exception as e:
         status_msg = f"Error: {str(e)}"
