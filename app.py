@@ -14,7 +14,7 @@ st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
 st.markdown("""
 <style>
     /* --- GLOBAL TEXT COLORS (Black) --- */
-    .stApp, .stMarkdown, .stText, p, h1, h2, h3 {
+    .stApp, .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
         color: #000000 !important;
         font-family: Arial, Helvetica, sans-serif;
     }
@@ -25,12 +25,11 @@ st.markdown("""
     }
     
     /* --- MARGINS (Space Left & Right) --- */
-    /* This creates the empty space on sides to help enforce 16:9 look */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem;
-        padding-left: 6rem !important;  
-        padding-right: 6rem !important; 
+        padding-left: 5rem !important;  
+        padding-right: 5rem !important; 
         max-width: 100%;
     }
 
@@ -63,7 +62,7 @@ st.markdown("""
         border: 2px solid #0052CC;
         border-radius: 4px;
         font-size: 20px;
-        height: 50px; /* Match Input Height */
+        height: 50px;
         width: 100%;
         margin-top: 0px; 
     }
@@ -182,7 +181,7 @@ def prepare_input(model, A, B, T, elem_props):
     vals["Tf"], vals["τ"] = tf, tf
     data = {col: (T if col == "T" else np.full(N, vals.get(col, 0))) for col in req}
     
-    # Return (X, tf, vals) so we can see 'vals' in Debug Log
+    # Return (X, tf, vals) for debugging
     return pd.DataFrame(data), tf, vals
 
 # =============================================================================
@@ -193,7 +192,6 @@ def prepare_input(model, A, B, T, elem_props):
 st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
-# [Spacer, Input(3), Button(1), Spacer]
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
 
 with c_input:
@@ -212,7 +210,7 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Grid Setup (Increased gap for separation)
+        # Grid Setup (Spacing for 16:9 look)
         row1 = st.columns(2, gap="large")
         row2 = st.columns(2, gap="large")
         grid_locs = row1 + row2 
@@ -220,9 +218,9 @@ if btn and elem_props:
         tf_val = 0
         idx = 0
         
-        # Debug Data
-        debug_internal_calcs = {}
-        debug_features = None
+        # --- DEBUG STORAGE FOR ALL MODELS ---
+        # We will store data for every model here
+        all_debug_data = {} 
         
         for key in ["S", "Sigma", "Kappa", "zT"]:
             if key in models:
@@ -230,12 +228,13 @@ if btn and elem_props:
                 X, tf_val, calc_vals = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # Capture values for Debug Log (Only need to do this once)
-                if idx == 0:
-                    debug_internal_calcs = calc_vals
-                    debug_features = X.iloc[0].to_dict()
+                # Store debug info for THIS model
+                all_debug_data[cfg['name']] = {
+                    "vals": calc_vals,
+                    "features": X.iloc[0].to_dict()
+                }
                 
-                # --- PLOTLY CONFIG (16:9 RATIO & BLACK STYLING) ---
+                # --- PLOTLY CONFIG (16:9 RATIO) ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -248,13 +247,11 @@ if btn and elem_props:
                 y_label_full = f"<b>{cfg['name']} ({cfg['unit']})</b>"
                 
                 fig.update_layout(
-                    # Title: Short Name at top
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
                         font=dict(size=20, color="black", family="Arial Black")
                     ),
-                    # X-Axis
                     xaxis=dict(
                         title=dict(text="<b>Temperature (K)</b>", font=dict(size=18, color="black")),
                         tickfont=dict(size=14, color="black"),
@@ -262,7 +259,6 @@ if btn and elem_props:
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Y-Axis (Rotated Label on side)
                     yaxis=dict(
                         title=dict(text=y_label_full, font=dict(size=18, color="black")),
                         tickfont=dict(size=14, color="black"),
@@ -270,11 +266,10 @@ if btn and elem_props:
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Box Style & 16:9 Ratio
                     paper_bgcolor='white',
                     plot_bgcolor='white',
                     margin=dict(l=80, r=20, t=60, b=60),
-                    height=380, # Adjusted for 16:9 on typical wide columns
+                    height=360, # FIXED HEIGHT FOR 16:9
                 )
                 
                 with grid_locs[idx]:
@@ -283,23 +278,27 @@ if btn and elem_props:
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
-        # --- DEBUG LOGS (EXACTLY AS REQUESTED) ---
+        # --- DEBUG LOGS (FOR ALL MODELS) ---
         with st.expander("Show Debug Logs (Internal Calculations)", expanded=False):
-            st.markdown("### 1. Composition Analysis")
+            st.markdown("### Composition Analysis")
             d1, d2 = st.columns(2)
-            d1.write("**A-Site Elements:**")
-            d1.write(A)
-            d2.write("**B-Site Elements:**")
-            d2.write(B)
+            d1.write("**A-Site:** " + str(A))
+            d2.write("**B-Site:** " + str(B))
             
-            st.markdown("### 2. Calculated Descriptors (Weighted Averages)")
-            # This shows the values (IR_A, EN_B, etc.) exactly like Tkinter
-            if debug_internal_calcs:
-                st.dataframe(pd.DataFrame.from_dict(debug_internal_calcs, orient='index', columns=['Value']))
-                
-            st.markdown("### 3. Final Feature Vector (First Row)")
-            if debug_features:
-                st.dataframe(pd.DataFrame([debug_features]))
+            st.divider()
+            
+            # Create Tabs for each Model to show their specific features
+            if all_debug_data:
+                tabs = st.tabs(list(all_debug_data.keys()))
+                for i, model_name in enumerate(all_debug_data.keys()):
+                    with tabs[i]:
+                        data = all_debug_data[model_name]
+                        
+                        st.markdown(f"#### Calculated Descriptors for {model_name}")
+                        st.dataframe(pd.DataFrame.from_dict(data['vals'], orient='index', columns=['Value']))
+                        
+                        st.markdown(f"#### Feature Vector (First Row) for {model_name}")
+                        st.dataframe(pd.DataFrame([data['features']]))
 
     except Exception as e:
         status_msg = f"Error: {str(e)}"
