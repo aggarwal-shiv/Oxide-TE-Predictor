@@ -126,7 +126,16 @@ setattr(__main__, "FeatureAwareModel", FeatureAwareModel)
 
 BASE_MODEL_DIR = "final_models"
 PROPERTIES_DB_PATH = "data/elemental_properties.xlsx"
-PROP_MAP = {"Z":"Atomic_Number", "IE":"Ionization_Energy_kJ_per_mol", "EN":"Electronegativity_Pauling", "EA":"Electron_Affinity_kJ_per_mol", "IR":"Ionic_Radius_pm", "MP":"Melting_Point_C", "BP":"Boiling_Point_C", "AD":"Atomic_Density_g_per_cm3", "HoE":"Heat_of_Evaporation_kJ_per_mol", "HoF":"Heat_of_Fusion_kJ_per_mol"}
+PROP_MAP = {"Z":"Atomic_Number", 
+            "IE":"Ionization_Energy_kJ_per_mol", 
+            "EN":"Electronegativity_Pauling", 
+            "EA":"Electron_Affinity_kJ_per_mol", 
+            "IR":"Ionic_Radius_pm", 
+            "MP":"Melting_Point_C", 
+            "BP":"Boiling_Point_C", 
+            "AD":"Atomic_Density_g_per_cm3", 
+            "HE":"Heat_of_Evaporation_kJ_per_mol",
+            "HF":"Heat_of_Fusion_kJ_per_mol"}
 A_SITE = {"Ca","Sr","Ba","Pb","La","Nd","Sm","Gd","Dy","Ho","Eu","Pr","Na","K","Ce","Bi","Er","Yb","Cu","Y","In","Sb"}
 B_SITE = {"Ti","Zr","Nb","Co","Mn","Fe","W","Sn","Hf","Ni","Ta","Ir","Mo","Ru","Rh","Cr"}
 X_SITE = {"O"}
@@ -320,5 +329,6 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
