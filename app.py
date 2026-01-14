@@ -13,19 +13,24 @@ st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
 
 st.markdown("""
 <style>
-    /* --- GLOBAL RESET --- */
+    /* --- GLOBAL TEXT COLORS (Black) --- */
+    .stApp, .stMarkdown, .stText, p, h1, h2, h3 {
+        color: #000000 !important;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    /* --- PAGE BACKGROUND --- */
     .stApp {
         background-color: #F5F7FA;
-        font-family: Arial, Helvetica, sans-serif;
-        color: black;
     }
     
     /* --- MARGINS (Space Left & Right) --- */
+    /* This creates the empty space on sides to help enforce 16:9 look */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem;
-        padding-left: 5rem !important;  /* Added space left */
-        padding-right: 5rem !important; /* Added space right */
+        padding-left: 6rem !important;  
+        padding-right: 6rem !important; 
         max-width: 100%;
     }
 
@@ -34,11 +39,13 @@ st.markdown("""
         text-align: center;
         font-size: 32px;
         font-weight: 900;
+        margin-bottom: 25px;
         color: #000000;
-        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
-    /* --- INPUT BAR --- */
+    /* --- INPUT BAR STYLE --- */
     div[data-testid="stTextInput"] input {
         border: 2px solid #000000;
         border-radius: 4px;
@@ -46,6 +53,7 @@ st.markdown("""
         font-weight: bold;
         font-size: 20px;
         color: black;
+        background-color: white;
     }
     
     div.stButton > button {
@@ -55,7 +63,7 @@ st.markdown("""
         border: 2px solid #0052CC;
         border-radius: 4px;
         font-size: 20px;
-        height: 50px;
+        height: 50px; /* Match Input Height */
         width: 100%;
         margin-top: 0px; 
     }
@@ -119,7 +127,7 @@ B_SITE = {"Ti","Zr","Nb","Co","Mn","Fe","W","Sn","Hf","Ni","Ta","Ir","Mo","Ru","
 X_SITE = {"O"}
 
 MODELS_CONFIG = {
-    "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "unit": "μV/K", "color": "#1f77b4"},
+    "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "unit": "µV/K", "color": "#1f77b4"},
     "Sigma": {"file": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl", "name": "Electrical Conductivity", "unit": "S/cm", "color": "#ff7f0e"},
     "Kappa": {"file": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl", "name": "Thermal Conductivity", "unit": "W/m·K", "color": "#2ca02c"},
     "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "dimensionless", "color": "#d62728"}
@@ -174,7 +182,7 @@ def prepare_input(model, A, B, T, elem_props):
     vals["Tf"], vals["τ"] = tf, tf
     data = {col: (T if col == "T" else np.full(N, vals.get(col, 0))) for col in req}
     
-    # Return vals as well for debugging
+    # Return (X, tf, vals) so we can see 'vals' in Debug Log
     return pd.DataFrame(data), tf, vals
 
 # =============================================================================
@@ -185,6 +193,7 @@ def prepare_input(model, A, B, T, elem_props):
 st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
+# [Spacer, Input(3), Button(1), Spacer]
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
 
 with c_input:
@@ -203,7 +212,7 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Increased gap="large" for spacing between plots
+        # Grid Setup (Increased gap for separation)
         row1 = st.columns(2, gap="large")
         row2 = st.columns(2, gap="large")
         grid_locs = row1 + row2 
@@ -211,24 +220,22 @@ if btn and elem_props:
         tf_val = 0
         idx = 0
         
-        # Storage for debug log
-        debug_vals = {}
+        # Debug Data
+        debug_internal_calcs = {}
         debug_features = None
         
         for key in ["S", "Sigma", "Kappa", "zT"]:
             if key in models:
                 cfg = MODELS_CONFIG[key]
-                
-                # Capture 'vals' (intermediate calcs) here
                 X, tf_val, calc_vals = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # Save first model's details for debug log
+                # Capture values for Debug Log (Only need to do this once)
                 if idx == 0:
-                    debug_vals = calc_vals
+                    debug_internal_calcs = calc_vals
                     debug_features = X.iloc[0].to_dict()
                 
-                # --- PLOTLY CONFIG ---
+                # --- PLOTLY CONFIG (16:9 RATIO & BLACK STYLING) ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -237,13 +244,11 @@ if btn and elem_props:
                     marker=dict(size=8, color=cfg['color']),
                 ))
                 
-                # Y-Label: Name + Unit
-                y_text = f"<b>{cfg['name']}</b>"
-                if cfg['unit']:
-                    y_text += f" <b>({cfg['unit']})</b>"
+                # Y-Label: Full Property Name + Unit
+                y_label_full = f"<b>{cfg['name']} ({cfg['unit']})</b>"
                 
                 fig.update_layout(
-                    # Title (Name at top center)
+                    # Title: Short Name at top
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
@@ -257,19 +262,19 @@ if btn and elem_props:
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Y-Axis (Property Name + Unit on the side)
+                    # Y-Axis (Rotated Label on side)
                     yaxis=dict(
-                        title=dict(text=y_text, font=dict(size=18, color="black")),
+                        title=dict(text=y_label_full, font=dict(size=18, color="black")),
                         tickfont=dict(size=14, color="black"),
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
-                    # Formatting
+                    # Box Style & 16:9 Ratio
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=70, r=30, t=60, b=60),
-                    height=340, # Fixed Height for aspect ratio
+                    margin=dict(l=80, r=20, t=60, b=60),
+                    height=380, # Adjusted for 16:9 on typical wide columns
                 )
                 
                 with grid_locs[idx]:
@@ -278,7 +283,7 @@ if btn and elem_props:
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
-        # --- DEBUG LOGS (RESTORED) ---
+        # --- DEBUG LOGS (EXACTLY AS REQUESTED) ---
         with st.expander("Show Debug Logs (Internal Calculations)", expanded=False):
             st.markdown("### 1. Composition Analysis")
             d1, d2 = st.columns(2)
@@ -288,8 +293,9 @@ if btn and elem_props:
             d2.write(B)
             
             st.markdown("### 2. Calculated Descriptors (Weighted Averages)")
-            if debug_vals:
-                st.dataframe(pd.DataFrame.from_dict(debug_vals, orient='index', columns=['Value']))
+            # This shows the values (IR_A, EN_B, etc.) exactly like Tkinter
+            if debug_internal_calcs:
+                st.dataframe(pd.DataFrame.from_dict(debug_internal_calcs, orient='index', columns=['Value']))
                 
             st.markdown("### 3. Final Feature Vector (First Row)")
             if debug_features:
