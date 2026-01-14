@@ -261,3 +261,4 @@ if btn:
 #                   STATUS BAR
 # ────────────────────────────────────────────────
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
