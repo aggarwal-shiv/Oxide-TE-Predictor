@@ -242,10 +242,10 @@ if btn and elem_props:
                     line=dict(width=3, color=cfg['color']),
                     # IMPROVED SCATTER POINTS: Larger, White Border
                     marker=dict(
-                        size=9, 
+                        size=15, 
                         color=cfg['color'], 
                         symbol='circle',
-                        line=dict(width=2, color='white') 
+                        line=dict(width=1, color='white') 
                     ),
                 ))
                 
@@ -320,3 +320,4 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
