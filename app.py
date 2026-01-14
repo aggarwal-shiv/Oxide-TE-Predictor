@@ -15,59 +15,66 @@ st.markdown("""
 <style>
     /* --- GLOBAL SETTINGS --- */
     .stApp {
-        background-color: #F0F2F6; 
-        font-family: 'Arial', sans-serif;
-        color: #000000 !important; /* Force Black */
+        background-color: #F4F6F9; /* Classic scientific grey-blue */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #000000 !important;
     }
 
-    /* --- LAYOUT COMPRESSION (Remove whitespace) --- */
+    /* --- LAYOUT OPTIMIZATION --- */
     .block-container {
-        padding-top: 2rem !important; /* Minimize top space */
-        padding-bottom: 2rem !important; /* Minimize bottom space */
-        padding-left: 2rem;
-        padding-right: 2rem;
-        max-width: 1600px;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+        padding-left: 3rem;
+        padding-right: 3rem;
+        max-width: 1400px;
         margin: 0 auto;
     }
 
     /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 36px;
-        font-weight: 900; /* Extra Bold */
-        color: #000000;
-    
-        margin-bottom: 10px; /* Pull input bar closer */
-        letter-spacing: 1px;
-        font-family: 'Arial Black', sans-serif;
+        font-size: 34px;
+        font-weight: 800;
+        color: #1A1A1A;
+        text-transform: uppercase; 
+        margin-bottom: 20px;
+        letter-spacing: 1.5px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
 
-    /* --- INPUT SECTION --- */
+    /* --- SEARCH BAR CONTAINER --- */
+    /* Make the input and button look like a single unit */
     div[data-testid="stTextInput"] input {
-        border: 2px solid #000000;
-        border-radius: 4px 0 0 4px; 
+        border: 2px solid #2C3E50;
+        border-radius: 4px; 
         text-align: center;
-        font-weight: bold;
-        color: #000000;
+        font-weight: 700;
+        color: #2C3E50;
         font-size: 18px;
-        height: 46px;
+        height: 48px;
         background: #FFFFFF;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
     }
     
     div.stButton > button {
-        background-color: #0052CC; 
+        background-color: #0056b3; /* Classic Strong Blue */
         color: white;
-        border: 2px solid #0052CC;
-        border-radius: 0 4px 4px 0; 
-        font-weight: bold;
-        height: 46px;
+        border: 2px solid #0056b3;
+        border-radius: 4px;
+        font-weight: 800;
+        height: 48px;
         width: 100%;
         font-size: 16px;
         text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
     }
     div.stButton > button:hover {
-        background-color: #0747a6;
-        border-color: #0747a6;
+        background-color: #004494;
+        border-color: #004494;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
     }
 
     /* --- STATUS BAR --- */
@@ -76,14 +83,15 @@ st.markdown("""
         left: 0;
         bottom: 0;
         width: 100%;
-        background-color: #E1E4E8;
-        border-top: 3px solid #000000;
-        color: #000000;
+        background-color: #E9ECEF;
+        border-top: 3px solid #2C3E50;
+        color: #2C3E50;
         text-align: left;
-        padding: 8px 30px;
+        padding: 10px 40px;
         font-size: 15px;
-        font-weight: bold;
+        font-weight: 700;
         z-index: 9999;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
     }
 
     /* Hide standard elements */
@@ -189,11 +197,12 @@ def prepare_input(model, A, B, T, elem_props):
 st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
-c1, c2, c3, c4 = st.columns([3, 4, 1, 3], gap="small")
+# Adjusted columns to center and size the input/button perfectly
+c1, c2, c3, c4 = st.columns([3, 4, 1.2, 3], gap="small")
 with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 with c3:
-    btn = st.button("Predict")
+    btn = st.button("PREDICT")
 
 # --- MAIN GRID ---
 elem_props = load_resources()
@@ -205,8 +214,7 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Space between Input and Plots
-        st.write("") 
+        st.write("") # Spacer
         
         # Grid Setup
         row1 = st.columns(2, gap="medium")
@@ -236,32 +244,32 @@ if btn and elem_props:
                     x=temps, y=preds,
                     mode='lines+markers',
                     line=dict(width=3, color=cfg['color']),
-                    marker=dict(size=6, color=cfg['color']),
+                    marker=dict(size=7, color=cfg['color'], symbol='circle'),
                 ))
                 
-                # --- BLACK & BOLD CONFIGURATION ---
+                # --- PLOT LAYOUT (Taller for better fill) ---
                 fig.update_layout(
                     # Title
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        y=0.9, 
+                        y=0.92, 
                         font=dict(size=18, color="black", family="Arial Black")
                     ),
                     # X-Axis
                     xaxis=dict(
                         title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial Black")),
                         tickfont=dict(size=12, color="black", family="Arial Black"),
-                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1, # Grid Enabled
-                        showline=True, linewidth=2, linecolor='black',   # Full Black Spine
+                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
+                        showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
                     # Y-Axis
                     yaxis=dict(
                         title=dict(text=y_label, font=dict(size=14, color="black", family="Arial Black")),
                         tickfont=dict(size=12, color="black", family="Arial Black"),
-                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1, # Grid Enabled
-                        showline=True, linewidth=2, linecolor='black',   # Full Black Spine
+                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
+                        showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
                     # Box Style
@@ -269,17 +277,18 @@ if btn and elem_props:
                     plot_bgcolor='white',
                     margin=dict(l=65, r=20, t=50, b=50),
                     
-                    # HEIGHT ADJUSTMENT
-                    # You wanted to change height without changing width. 
-                    # 280px is the sweet spot to fit all 4 on one screen.
-                    height=280, 
+                    # HEIGHT ADJUSTMENT (Increased to fill vertical space)
+                    height=320, 
                 )
                 
                 with grid_locs[idx]:
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 idx += 1
 
-        status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
+        # Formatted Status String
+        a_str = str(A).replace("'", "").replace("{", "").replace("}", "")
+        b_str = str(B).replace("'", "").replace("{", "").replace("}", "")
+        status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site: {{{a_str}}} | B-site: {{{b_str}}}"
         
         # --- DEBUG LOGS ---
         with st.expander("Show Debug Logs", expanded=False):
@@ -302,4 +311,3 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
-
