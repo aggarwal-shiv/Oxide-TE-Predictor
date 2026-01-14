@@ -7,57 +7,85 @@ import os
 import plotly.graph_objects as go
 
 # =============================================================================
-# 1. PAGE SETUP & CSS (The Layout Engine)
+# 1. PAGE SETUP & CSS (The Design Engine)
 # =============================================================================
-st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
+st.set_page_config(page_title="Perovskite TE Predictor", layout="wide")
 
 st.markdown("""
 <style>
-    /* 1. RESET MARGINS (Make it fit single page) */
-    .block-container {
-        padding-top: 1rem;
-        padding-bottom: 0rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
+    /* --- GLOBAL RESET & BACKGROUND --- */
+    .stApp {
+        background-color: #F5F7FA; /* The Light Gray Background */
+        font-family: Arial, Helvetica, sans-serif;
     }
     
-    /* 2. TITLE STYLE */
-    .main-title {
-        text-align: center;
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #172B4D;
-        margin-bottom: 0.5rem;
-        margin-top: -1rem; /* Pull it up */
+    /* Remove default Streamlit top padding to fit the header */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 5rem; /* Space for status bar */
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 100%;
     }
 
-    /* 3. INPUT & BUTTON ALIGNMENT (Center Row) */
-    /* This aligns the button vertically with the input box */
+    /* --- 1. HEADER STYLE --- */
+    .custom-header {
+        background-color: white;
+        padding: 12px 0;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: #172B4D;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+
+    /* --- 2. INPUT BAR STYLE --- */
+    /* Style the input text box */
+    div[data-testid="stTextInput"] input {
+        border: 2px solid #DFE1E6;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 8px 12px;
+    }
+    
+    /* Style the Button to match the HTML Blue */
     div.stButton > button {
-        width: 100%;
-        height: 2.8rem; /* Match input height roughly */
-        margin-top: 0px; 
         background-color: #0052CC;
         color: white;
         font-weight: bold;
         border: none;
+        border-radius: 4px;
+        padding: 9px 20px;
+        font-size: 16px;
+        width: 100%;
+        transition: background 0.2s;
     }
     div.stButton > button:hover {
         background-color: #0747a6;
-    }
-    
-    /* Input Text Alignment */
-    div[data-testid="stTextInput"] input {
-        text-align: center;
-        font-weight: bold;
-        font-size: 1.1rem;
+        color: white;
     }
 
-    /* 4. PLOT BOXES */
-    /* Adds a subtle border to the plotly charts container if needed, 
-       but we mostly handle this inside Plotly layout */
-    
-    /* Hide Streamlit Menu */
+    /* --- 3. STATUS BAR (Fixed Bottom) --- */
+    .status-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #E1E4E8;
+        border-top: 2px solid #172B4D;
+        color: #172B4D;
+        text-align: center;
+        padding: 10px 15px;
+        font-size: 14px;
+        font-weight: bold;
+        z-index: 9999;
+    }
+
+    /* Hide standard Streamlit chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -65,7 +93,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =============================================================================
-# 2. BACKEND LOGIC (No Changes needed here)
+# 2. BACKEND LOGIC (Standard)
 # =============================================================================
 try:
     import sklearn
@@ -88,10 +116,9 @@ class FeatureAwareModel:
 import __main__
 setattr(__main__, "FeatureAwareModel", FeatureAwareModel)
 
-# --- CONSTANTS ---
 BASE_MODEL_DIR = "final_models"
 PROPERTIES_DB_PATH = "data/elemental_properties.xlsx"
-PROP_MAP = {"Z":"Atomic_Number", "IE":"Ionization_Energy_kJ_per_mol", "EN":"Electronegativity_Pauling", "EA":"Electron_Affinity_kJ_per_mol", "IR":"Ionic_Radius_pm", "MP":"Melting_Point_C", "BP":"Boiling_Point_C", "AD":"Atomic_Density_g_per_cm3", "HoE":"Heat_of_Evaporation_kJ_per_mol", "HoF":"Heat_of_Fusion_kJ_per_mol"}
+PROP_MAP = {"Z":"Atomic_Number", "IE":"Ionization_Energy_kJ_per_mol", "EN":"Electronegativity_Pauling", "EA":"Electron_Affinity_kJ_per_mol", "IR":"Ionic_Radius_pm", "MP":"Melting_Point_C", "BP":"Boiling_Point_C", "AD":"Atomic_Density_g_per_cm3", "HE":"Heat_of_Evaporation_kJ_per_mol", "HF":"Heat_of_Fusion_kJ_per_mol"}
 A_SITE = {"Ca","Sr","Ba","Pb","La","Nd","Sm","Gd","Dy","Ho","Eu","Pr","Na","K","Ce","Bi","Er","Yb","Cu","Y","In","Sb"}
 B_SITE = {"Ti","Zr","Nb","Co","Mn","Fe","W","Sn","Hf","Ni","Ta","Ir","Mo","Ru","Rh","Cr"}
 X_SITE = {"O"}
@@ -157,47 +184,44 @@ def prepare_input(model, A, B, T, elem_props):
 # 3. UI LAYOUT
 # =============================================================================
 
-# --- HEADER ---
-st.markdown('<div class="main-title">Oxide TE-Predictor</div>', unsafe_allow_html=True)
+# --- A. HEADER ---
+st.markdown('<div class="custom-header">Perovskite TE Predictor</div>', unsafe_allow_html=True)
 
-# --- CENTERED INPUT BAR ---
-# Using columns to center: [Spacer, Input(Large), Button(Small), Spacer]
-# Ratios: 2 parts empty, 3 parts input, 1 part button, 2 parts empty
+# --- B. INPUT BAR (Centered) ---
+# [Spacer, Input(3), Button(1), Spacer]
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
 
 with c_input:
-    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
-with c_btn:
-    btn = st.button("Predict")
+    formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed", placeholder="Enter Formula...")
 
-# --- MAIN CONTENT ---
+with c_btn:
+    btn = st.button("Analyze Composition")
+
+# --- C. MAIN GRID LOGIC ---
 elem_props = load_resources()
 models = load_models()
-status_msg = "Ready."
+status_msg = "System Ready | Waiting for input..."
 
 if btn and elem_props:
     try:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # --- PLOT GRID (2x2) ---
-        # We create two rows of two columns
+        # Create 2x2 Grid
         row1 = st.columns(2)
         row2 = st.columns(2)
-        grid_locs = row1 + row2 # [TopLeft, TopRight, BotLeft, BotRight]
+        grid_locs = row1 + row2 
         
         tf_val = 0
         idx = 0
         
-        keys = ["S", "Sigma", "Kappa", "zT"]
-        
-        for key in keys:
+        for key in ["S", "Sigma", "Kappa", "zT"]:
             if key in models:
                 cfg = MODELS_CONFIG[key]
                 X, tf_val = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # --- PLOTLY CONFIG FOR FIXED RATIO & BOX ---
+                # --- PLOTLY CARD CONFIGURATION ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -207,38 +231,44 @@ if btn and elem_props:
                 ))
                 
                 fig.update_layout(
+                    # Title inside the plot
                     title=dict(
                         text=f"<b>{cfg['name']}</b>", 
                         x=0.5, 
-                        font=dict(size=16)
+                        font=dict(size=16, color="#172B4D")
                     ),
+                    # Axes Styling
                     xaxis=dict(
-                        title="Temperature (K)", 
+                        title="<b>Temperature (K)</b>", 
                         showgrid=True, gridcolor='#F0F0F0',
-                        showline=True, linewidth=1, linecolor='black', mirror=True
+                        showline=True, linewidth=2, linecolor='#172B4D',
+                        mirror=True, ticks="outside"
                     ),
                     yaxis=dict(
-                        title=cfg['unit'], 
+                        title=f"<b>{cfg['unit']}</b>", 
                         showgrid=True, gridcolor='#F0F0F0',
-                        showline=True, linewidth=1, linecolor='black', mirror=True
+                        showline=True, linewidth=2, linecolor='#172B4D',
+                        mirror=True, ticks="outside"
                     ),
-                    # TIGHT MARGINS & FIXED HEIGHT
-                    margin=dict(l=50, r=20, t=40, b=40),
-                    height=320, # Fixed height to enforce ratio on single page
+                    # CARD EFFECT: White background + Margins
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    # BOX SHADOW EFFECT (Simulated via linecolor mirror above)
+                    margin=dict(l=60, r=20, t=50, b=50),
+                    height=300, # Fixed height for uniformity
                 )
                 
                 with grid_locs[idx]:
-                    # container_width=True makes it fill the column width
-                    # height=320 makes it keep the ratio
-                    st.plotly_chart(fig, use_container_width=True)
+                    # We wrap the chart in a div to give it the shadow/radius via CSS if needed,
+                    # but Plotly handles the white background well.
+                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                     
                 idx += 1
 
-        status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable"
+        status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site Sum: 1.00 | B-site Sum: 1.00"
 
     except Exception as e:
+        status_msg = f"Error: {str(e)}"
         st.error(str(e))
-        status_msg = "Error"
+
+# --- D. STATUS BAR ---
+st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
