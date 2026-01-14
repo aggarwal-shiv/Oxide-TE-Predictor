@@ -24,21 +24,21 @@ st.markdown("""
         background-color: #F5F7FA;
     }
     
-    /* --- MARGINS (Space Left & Right) --- */
+    /* --- MARGINS (Compact for Single Screen) --- */
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 5rem;
-        padding-left: 5rem !important;  
-        padding-right: 5rem !important; 
+        padding-top: 0.5rem !important;
+        padding-bottom: 2rem; /* Reduced bottom padding */
+        padding-left: 3rem !important;  
+        padding-right: 3rem !important; 
         max-width: 100%;
     }
 
     /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 900;
-        margin-bottom: 25px;
+        margin-bottom: 15px;
         color: #000000;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -50,7 +50,7 @@ st.markdown("""
         border-radius: 4px;
         text-align: center;
         font-weight: bold;
-        font-size: 20px;
+        font-size: 18px;
         color: black;
         background-color: white;
     }
@@ -61,8 +61,8 @@ st.markdown("""
         font-weight: bold;
         border: 2px solid #0052CC;
         border-radius: 4px;
-        font-size: 20px;
-        height: 50px;
+        font-size: 18px;
+        height: 46px; /* Match Input Height */
         width: 100%;
         margin-top: 0px; 
     }
@@ -81,8 +81,8 @@ st.markdown("""
         border-top: 3px solid #000000;
         color: #000000;
         text-align: center;
-        padding: 12px;
-        font-size: 18px;
+        padding: 8px;
+        font-size: 16px;
         font-weight: bold;
         z-index: 9999;
     }
@@ -125,11 +125,12 @@ A_SITE = {"Ca","Sr","Ba","Pb","La","Nd","Sm","Gd","Dy","Ho","Eu","Pr","Na","K","
 B_SITE = {"Ti","Zr","Nb","Co","Mn","Fe","W","Sn","Hf","Ni","Ta","Ir","Mo","Ru","Rh","Cr"}
 X_SITE = {"O"}
 
+# Added 'symbol' key for Y-axis labels
 MODELS_CONFIG = {
-    "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "unit": "µV/K", "color": "#1f77b4"},
-    "Sigma": {"file": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl", "name": "Electrical Conductivity", "unit": "S/cm", "color": "#ff7f0e"},
-    "Kappa": {"file": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl", "name": "Thermal Conductivity", "unit": "W/m·K", "color": "#2ca02c"},
-    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "unit": "dimensionless", "color": "#d62728"}
+    "S": {"file": "Seebeck_Coefficient_S_μV_K__ExtraTrees.pkl", "name": "Seebeck Coefficient", "symbol": "S", "unit": "µV/K", "color": "#1f77b4"},
+    "Sigma": {"file": "Electrical_Conductivity_σ_S_cm__CatBoost.pkl", "name": "Electrical Conductivity", "symbol": "σ", "unit": "S/cm", "color": "#ff7f0e"},
+    "Kappa": {"file": "Thermal_Conductivity_κ_W_m-K__GradientBoost.pkl", "name": "Thermal Conductivity", "symbol": "κ", "unit": "W/m·K", "color": "#2ca02c"},
+    "zT": {"file": "Figure_of_Merit_zT_CatBoost.pkl", "name": "Figure of Merit (zT)", "symbol": "zT", "unit": "", "color": "#d62728"}
 }
 
 @st.cache_data
@@ -180,8 +181,6 @@ def prepare_input(model, A, B, T, elem_props):
     tf = (vals["IR_A"] + 140.0) / (1.414 * (vals["IR_B"] + 140.0))
     vals["Tf"], vals["τ"] = tf, tf
     data = {col: (T if col == "T" else np.full(N, vals.get(col, 0))) for col in req}
-    
-    # Return (X, tf, vals) for debugging
     return pd.DataFrame(data), tf, vals
 
 # =============================================================================
@@ -193,10 +192,8 @@ st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_
 
 # --- INPUT BAR ---
 c_left, c_input, c_btn, c_right = st.columns([2, 3, 1, 2], gap="small")
-
 with c_input:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
-
 with c_btn:
     btn = st.button("Predict")
 
@@ -210,16 +207,13 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Grid Setup (Spacing for 16:9 look)
-        row1 = st.columns(2, gap="large")
-        row2 = st.columns(2, gap="large")
+        # Reduced gap slightly to fit on screen better
+        row1 = st.columns(2, gap="medium")
+        row2 = st.columns(2, gap="medium")
         grid_locs = row1 + row2 
         
         tf_val = 0
         idx = 0
-        
-        # --- DEBUG STORAGE FOR ALL MODELS ---
-        # We will store data for every model here
         all_debug_data = {} 
         
         for key in ["S", "Sigma", "Kappa", "zT"]:
@@ -228,13 +222,9 @@ if btn and elem_props:
                 X, tf_val, calc_vals = prepare_input(models[key], A, B, temps, elem_props)
                 preds = models[key].predict(X)
                 
-                # Store debug info for THIS model
-                all_debug_data[cfg['name']] = {
-                    "vals": calc_vals,
-                    "features": X.iloc[0].to_dict()
-                }
+                all_debug_data[cfg['name']] = {"vals": calc_vals, "features": X.iloc[0].to_dict()}
                 
-                # --- PLOTLY CONFIG (16:9 RATIO) ---
+                # --- PLOTLY CONFIG ---
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=temps, y=preds,
@@ -243,33 +233,39 @@ if btn and elem_props:
                     marker=dict(size=8, color=cfg['color']),
                 ))
                 
-                # Y-Label: Full Property Name + Unit
-                y_label_full = f"<b>{cfg['name']} ({cfg['unit']})</b>"
+                # Y-Label: Symbol + Unit (e.g., "S (µV/K)")
+                y_label_sym = f"<b>{cfg['symbol']}"
+                if cfg['unit']:
+                    y_label_sym += f" ({cfg['unit']})"
+                y_label_sym += "</b>"
                 
                 fig.update_layout(
+                    # Title Centered
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        font=dict(size=20, color="black", family="Arial Black")
+                        font=dict(size=18, color="black", family="Arial Black")
                     ),
+                    # X-Axis (Bold, Black)
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=18, color="black")),
-                        tickfont=dict(size=14, color="black"),
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=16, color="black", family="Arial Black")),
+                        tickfont=dict(size=14, color="black", family="Arial Black"), # BOLD TICKS
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
+                    # Y-Axis (Symbol Label, Bold, Black)
                     yaxis=dict(
-                        title=dict(text=y_label_full, font=dict(size=18, color="black")),
-                        tickfont=dict(size=14, color="black"),
+                        title=dict(text=y_label_sym, font=dict(size=16, color="black", family="Arial Black")),
+                        tickfont=dict(size=14, color="black", family="Arial Black"), # BOLD TICKS
                         showgrid=True, gridcolor='#E0E0E0',
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickcolor="black", tickwidth=2
                     ),
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=80, r=20, t=60, b=60),
-                    height=360, # FIXED HEIGHT FOR 16:9
+                    margin=dict(l=70, r=20, t=50, b=50),
+                    height=280, # Reduced height -> Fits 4 on single screen (16:9ish ratio preserved)
                 )
                 
                 with grid_locs[idx]:
@@ -278,27 +274,17 @@ if btn and elem_props:
 
         status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
-        # --- DEBUG LOGS (FOR ALL MODELS) ---
-        with st.expander("Show Debug Logs (Internal Calculations)", expanded=False):
-            st.markdown("### Composition Analysis")
-            d1, d2 = st.columns(2)
-            d1.write("**A-Site:** " + str(A))
-            d2.write("**B-Site:** " + str(B))
-            
-            st.divider()
-            
-            # Create Tabs for each Model to show their specific features
+        # --- DEBUG LOGS ---
+        with st.expander("Show Debug Logs", expanded=False):
+            st.write(f"**A-Site:** {A} | **B-Site:** {B}")
             if all_debug_data:
                 tabs = st.tabs(list(all_debug_data.keys()))
                 for i, model_name in enumerate(all_debug_data.keys()):
                     with tabs[i]:
                         data = all_debug_data[model_name]
-                        
-                        st.markdown(f"#### Calculated Descriptors for {model_name}")
-                        st.dataframe(pd.DataFrame.from_dict(data['vals'], orient='index', columns=['Value']))
-                        
-                        st.markdown(f"#### Feature Vector (First Row) for {model_name}")
-                        st.dataframe(pd.DataFrame([data['features']]))
+                        c1, c2 = st.columns(2)
+                        c1.dataframe(pd.DataFrame.from_dict(data['vals'], orient='index', columns=['Value']))
+                        c2.dataframe(pd.DataFrame([data['features']]))
 
     except Exception as e:
         status_msg = f"Error: {str(e)}"
