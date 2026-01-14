@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 # =============================================================================
 # 1. VISUAL CONFIGURATION (CSS)
 # =============================================================================
-st.set_page_config(page_title="Perovskite TE Predictor", layout="wide")
+st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
 
 st.markdown("""
 <style>
@@ -17,36 +17,38 @@ st.markdown("""
     .stApp {
         background-color: #F0F2F6; 
         font-family: 'Arial', sans-serif;
-        color: #000000;
+        color: #000000 !important; /* Force Black */
     }
 
-    /* --- LAYOUT CONSTRAINT --- */
+    /* --- LAYOUT COMPRESSION (Remove whitespace) --- */
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 6rem;
-        max-width: 1400px;    
+        padding-top: 1rem !important; /* Minimize top space */
+        padding-bottom: 2rem !important; /* Minimize bottom space */
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1600px;
         margin: 0 auto;
     }
 
     /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 32px;
-        font-weight: 800;
-        color: #172B4D;
+        font-size: 36px;
+        font-weight: 900; /* Extra Bold */
+        color: #000000;
         text-transform: uppercase; 
-        margin-bottom: 25px;
-        letter-spacing: 0.5px;
+        margin-bottom: 10px; /* Pull input bar closer */
+        letter-spacing: 1px;
         font-family: 'Arial Black', sans-serif;
     }
 
     /* --- INPUT SECTION --- */
     div[data-testid="stTextInput"] input {
-        border: 1px solid #B3B3B3;
+        border: 2px solid #000000;
         border-radius: 4px 0 0 4px; 
         text-align: center;
         font-weight: bold;
-        color: #172B4D;
+        color: #000000;
         font-size: 18px;
         height: 46px;
         background: #FFFFFF;
@@ -55,7 +57,7 @@ st.markdown("""
     div.stButton > button {
         background-color: #0052CC; 
         color: white;
-        border: none;
+        border: 2px solid #0052CC;
         border-radius: 0 4px 4px 0; 
         font-weight: bold;
         height: 46px;
@@ -65,6 +67,7 @@ st.markdown("""
     }
     div.stButton > button:hover {
         background-color: #0747a6;
+        border-color: #0747a6;
     }
 
     /* --- STATUS BAR --- */
@@ -74,14 +77,13 @@ st.markdown("""
         bottom: 0;
         width: 100%;
         background-color: #E1E4E8;
-        border-top: 3px solid #172B4D;
-        color: #172B4D;
+        border-top: 3px solid #000000;
+        color: #000000;
         text-align: left;
-        padding: 12px 30px;
+        padding: 8px 30px;
         font-size: 15px;
         font-weight: bold;
         z-index: 9999;
-        font-family: 'Arial', sans-serif;
     }
 
     /* Hide standard elements */
@@ -184,14 +186,14 @@ def prepare_input(model, A, B, T, elem_props):
 # =============================================================================
 
 # --- HEADER ---
-st.markdown('<div class="custom-header">PEROVSKITE TE PREDICTOR</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
 c1, c2, c3, c4 = st.columns([3, 4, 1, 3], gap="small")
 with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 with c3:
-    btn = st.button("Analyze")
+    btn = st.button("ANALYZE")
 
 # --- MAIN GRID ---
 elem_props = load_resources()
@@ -203,9 +205,12 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        # Larger gap for distinct "Card" separation
-        row1 = st.columns(2, gap="large")
-        row2 = st.columns(2, gap="large")
+        # Space between Input and Plots
+        st.write("") 
+        
+        # Grid Setup
+        row1 = st.columns(2, gap="medium")
+        row2 = st.columns(2, gap="medium")
         grid_locs = row1 + row2 
         
         tf_val = 0
@@ -220,7 +225,7 @@ if btn and elem_props:
                 
                 all_debug_data[cfg['name']] = {"vals": calc_vals, "features": X.iloc[0].to_dict()}
                 
-                # Y-Label
+                # Y-Label (Bold Black Symbol + Unit)
                 y_label = f"<b>{cfg['symbol']}"
                 if cfg['unit']:
                     y_label += f" ({cfg['unit']})"
@@ -234,69 +239,47 @@ if btn and elem_props:
                     marker=dict(size=6, color=cfg['color']),
                 ))
                 
-                # --- PRECISE AXIS & FONT CONFIGURATION ---
+                # --- BLACK & BOLD CONFIGURATION ---
                 fig.update_layout(
-                    # Global Font Settings (Arial, Bold, Black)
-                    font=dict(family="Arial", size=14, color="black"),
-                    
                     # Title
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
                         x=0.5,
-                        y=0.9, # Slight push down
-                        font=dict(size=16)
+                        y=0.9, 
+                        font=dict(size=18, color="black", family="Arial Black")
                     ),
-                    
-                    # X-Axis (Full Box, No Grid, Outward Ticks)
+                    # X-Axis
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14)),
-                        showgrid=False,       # NO GRID
-                        showline=True,        # Show Axis Line
-                        linewidth=2,          # Thicker Line (Spine)
-                        linecolor='black',    # Black Spine
-                        mirror=True,          # Mirror to Top/Right (Complete Box)
-                        ticks="outside",      # Ticks point out
-                        tickwidth=2,
-                        tickcolor='black',
-                        ticklen=6,
-                        tickfont=dict(size=12, color="black", family="Arial")
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial Black")),
+                        tickfont=dict(size=12, color="black", family="Arial Black"),
+                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1, # Grid Enabled
+                        showline=True, linewidth=2, linecolor='black',   # Full Black Spine
+                        mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
-                    
-                    # Y-Axis (Full Box, No Grid, Outward Ticks)
+                    # Y-Axis
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=14)),
-                        showgrid=False,       # NO GRID
-                        showline=True,        # Show Axis Line
-                        linewidth=2,          # Thicker Line
-                        linecolor='black',    # Black Spine
-                        mirror=True,          # Mirror to Right (Complete Box)
-                        ticks="outside",      # Ticks point out
-                        tickwidth=2,
-                        tickcolor='black',
-                        ticklen=6,
-                        tickfont=dict(size=12, color="black", family="Arial")
+                        title=dict(text=y_label, font=dict(size=14, color="black", family="Arial Black")),
+                        tickfont=dict(size=12, color="black", family="Arial Black"),
+                        showgrid=True, gridcolor='#E0E0E0', gridwidth=1, # Grid Enabled
+                        showline=True, linewidth=2, linecolor='black',   # Full Black Spine
+                        mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
-                    
-                    # Plot Background
+                    # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
+                    margin=dict(l=65, r=20, t=50, b=50),
                     
-                    # Margins (Prevent label cutting)
-                    margin=dict(l=70, r=20, t=50, b=50),
-                    
-                    # Size (16:9 Aspect Ratio)
-                    height=250, 
+                    # HEIGHT ADJUSTMENT
+                    # You wanted to change height without changing width. 
+                    # 280px is the sweet spot to fit all 4 on one screen.
+                    height=280, 
                 )
                 
                 with grid_locs[idx]:
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-                
                 idx += 1
 
-        # Status
-        a_str = str(A).replace("'", "").replace("{", "").replace("}", "")
-        b_str = str(B).replace("'", "").replace("{", "").replace("}", "")
-        status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site: {{{a_str}}} | B-site: {{{b_str}}}"
+        status_msg = f"Tolerance Factor: {tf_val:.3f} | Stable Structure"
         
         # --- DEBUG LOGS ---
         with st.expander("Show Debug Logs", expanded=False):
