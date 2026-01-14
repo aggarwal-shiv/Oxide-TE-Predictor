@@ -15,65 +15,57 @@ st.markdown("""
 <style>
     /* --- GLOBAL SETTINGS --- */
     .stApp {
-        background-color: #F4F7F6; /* Clean Scientific Grey */
-        font-family: 'Segoe UI', sans-serif;
+        background-color: #F0F2F6; 
+        font-family: 'Segoe UI', Arial, sans-serif;
         color: #000000 !important;
     }
 
-    /* --- LAYOUT CONSTRAINT (Fixes Stretching) --- */
+    /* --- LAYOUT OPTIMIZATION --- */
     .block-container {
-        padding-top: 1rem !important;  /* Minimized Top Space */
-        padding-bottom: 3rem !important;
-        max-width: 1200px; /* Reduced width to force taller, non-stretched plots */
+        padding-top: 1.5rem !important;
+        padding-bottom: 5rem !important;
+        max-width: 1400px; /* Constrain width to prevent stretching */
         margin: 0 auto;
     }
 
     /* --- HEADER --- */
     .custom-header {
         text-align: center;
-        font-size: 38px;
+        font-size: 36px;
         font-weight: 900;
         color: #1A1A1A;
         text-transform: uppercase; 
-        margin-top: -10px;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         letter-spacing: 1px;
     }
 
-    /* --- SEARCH BAR STYLING --- */
-    /* Input Box */
+    /* --- SEARCH BAR --- */
     div[data-testid="stTextInput"] input {
         border: 2px solid #2C3E50;
-        border-right: none; /* Merge with button */
-        border-radius: 6px 0 0 6px; 
+        border-right: none;
+        border-radius: 4px 0 0 4px; 
         text-align: center;
         font-weight: 700;
         color: #2C3E50;
-        font-size: 20px;
-        height: 50px;
+        font-size: 18px;
+        height: 48px;
         background: #FFFFFF;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
-    /* Button */
     div.stButton > button {
         background-color: #0056b3; 
         color: white;
         border: 2px solid #0056b3;
-        border-radius: 0 6px 6px 0;
+        border-radius: 0 4px 4px 0;
         font-weight: 800;
-        height: 50px;
+        height: 48px;
         width: 100%;
-        font-size: 18px;
+        font-size: 16px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        transition: all 0.2s ease;
     }
     div.stButton > button:hover {
         background-color: #004494;
-        border-color: #004494;
-        transform: translateY(-1px);
     }
 
     /* --- STATUS BAR --- */
@@ -87,7 +79,7 @@ st.markdown("""
         color: #2C3E50;
         text-align: left;
         padding: 10px 40px;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         z-index: 9999;
     }
@@ -195,7 +187,7 @@ def prepare_input(model, A, B, T, elem_props):
 st.markdown('<div class="custom-header">OXIDE TE-PREDICTOR</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
-c1, c2, c3, c4 = st.columns([2, 4, 1.2, 2], gap="small")
+c1, c2, c3, c4 = st.columns([2.5, 3, 1, 2.5], gap="small")
 with c2:
     formula = st.text_input("Formula", value="La0.2Ca0.8TiO3", label_visibility="collapsed")
 with c3:
@@ -211,11 +203,11 @@ if btn and elem_props:
         A, B = parse_formula(formula.strip())
         temps = np.arange(300, 1101, 50)
         
-        st.write("") # Spacer
+        st.write("") # Visual spacer
         
         # Grid Setup
-        row1 = st.columns(2, gap="medium")
-        row2 = st.columns(2, gap="medium")
+        row1 = st.columns(2, gap="large")
+        row2 = st.columns(2, gap="large")
         grid_locs = row1 + row2 
         
         tf_val = 0
@@ -230,7 +222,7 @@ if btn and elem_props:
                 
                 all_debug_data[cfg['name']] = {"vals": calc_vals, "features": X.iloc[0].to_dict()}
                 
-                # Y-Label (Bold Black Symbol + Unit)
+                # Y-Label
                 y_label = f"<b>{cfg['symbol']}"
                 if cfg['unit']:
                     y_label += f" ({cfg['unit']})"
@@ -244,45 +236,49 @@ if btn and elem_props:
                     marker=dict(size=7, color=cfg['color'], symbol='circle'),
                 ))
                 
-                # --- PLOT LAYOUT (Taller for better fill) ---
+                # --- OPTIMIZED PLOT LAYOUT ---
                 fig.update_layout(
-                    # Title
+                    # Title (Centered perfectly)
                     title=dict(
                         text=f"<b>{cfg['name']}</b>",
-                        x=0.5,
-                        y=0.9, 
-                        font=dict(size=20, color="#1A1A1A", family="Arial Black")
+                        x=0.5, # Absolute Center
+                        xanchor='center',
+                        y=0.96, # Push slightly to top to save space
+                        font=dict(size=18, color="black", family="Arial Black")
                     ),
                     # X-Axis
                     xaxis=dict(
-                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=16, color="black", family="Arial Black")),
-                        tickfont=dict(size=14, color="black", family="Arial Black"),
+                        title=dict(text="<b>Temperature (K)</b>", font=dict(size=14, color="black", family="Arial Black")),
+                        tickfont=dict(size=12, color="black", family="Arial Black"),
                         showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
                     # Y-Axis
                     yaxis=dict(
-                        title=dict(text=y_label, font=dict(size=16, color="black", family="Arial Black")),
-                        tickfont=dict(size=14, color="black", family="Arial Black"),
+                        title=dict(text=y_label, font=dict(size=14, color="black", family="Arial Black")),
+                        tickfont=dict(size=12, color="black", family="Arial Black"),
                         showgrid=True, gridcolor='#E0E0E0', gridwidth=1,
                         showline=True, linewidth=2, linecolor='black',
                         mirror=True, ticks="outside", tickwidth=2, tickcolor='black'
                     ),
+                    # TIGHT MARGINS to Fill the Card
+                    margin=dict(l=60, r=20, t=40, b=40),
+                    
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=75, r=20, t=80, b=60), # Increased Top Margin (t=80) fixes Title Overlap
                     
-                    # HEIGHT ADJUSTMENT
-                    height=340, # Taller height + Restricted Width = Correct 16:9 Look
+                    # Size
+                    height=300, 
                 )
                 
                 with grid_locs[idx]:
+                    # use_container_width=True allows it to fill the column width perfectly
                     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 idx += 1
 
-        # Formatted Status String
+        # Status Bar
         a_str = str(A).replace("'", "").replace("{", "").replace("}", "")
         b_str = str(B).replace("'", "").replace("{", "").replace("}", "")
         status_msg = f"Tolerance Factor: {tf_val:.3f} | A-site: {{{a_str}}} | B-site: {{{b_str}}}"
