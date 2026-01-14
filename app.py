@@ -39,7 +39,7 @@ st.markdown("""
     .custom-header {
         text-align: center;
         font-size: 36px;
-        font-weight: 500; /* Extra Bold */
+        font-weight: 600; /* Extra Bold */
         color: #0F172A; /* Deep Navy Black */
         margin-top: 5px; /* Tiny buffer from window edge */
         margin-bottom: 5px;
@@ -69,7 +69,7 @@ st.markdown("""
         height: 46px;
         width: 100%;
         font-size: 22px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0 px;
     }
     div.stButton > button:hover {
         background-color: #003E99;
@@ -284,7 +284,7 @@ if btn and elem_props:
                     # Box Style
                     paper_bgcolor='white',
                     plot_bgcolor='white',
-                    margin=dict(l=40, r=20, t=40, b=10),
+                    margin=dict(l=40, r=20, t=40, b=0),
                     
                     # HEIGHT ADJUSTMENT
                     height=360, 
@@ -320,4 +320,5 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
