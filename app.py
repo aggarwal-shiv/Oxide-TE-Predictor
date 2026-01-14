@@ -26,7 +26,7 @@ st.markdown("""
         padding-bottom: 2rem !important;
         padding-left: 2rem;
         padding-right: 2rem;
-        max-width: 1300px;
+        max-width: 1200px;
         margin: 0 auto;
     }
     
@@ -308,6 +308,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
