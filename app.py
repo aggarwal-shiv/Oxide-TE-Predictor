@@ -61,8 +61,8 @@ PROP_MAP = {
     "MP": "Melting_Point_C",
     "BP": "Boiling_Point_C",
     "AD": "Atomic_Density_g_per_cm3",
-    "HoE": "Heat_of_Evaporation_kJ_per_mol",
-    "HoF": "Heat_of_Fusion_kJ_per_mol",
+    "HE": "Heat_of_Evaporation_kJ_per_mol",
+    "HF": "Heat_of_Fusion_kJ_per_mol",
 }
 
 MODELS_CONFIG = {
@@ -298,3 +298,4 @@ if run_btn:
         st.error(f"**Input Error:** {ve}")
     except Exception as e:
         st.error(f"**System Error:** {e}")
+
