@@ -1,9 +1,10 @@
 # 🧪 Oxide TE-Predictor  
 # **An Interpretable Machine Learning Framework aided Accelerated Design of Oxide Perovskites-based Thermoelectrics for Clean Energy Generation from Waste Heat**
 
-*Shivam Aggarwal, Amandeep Saha, and Tanmoy Maiti*
+*Shivam Aggarwal, Amandeep Saha, and Tanmoy Maiti* 
 
 *Plasmonics and Perovskites Laboratory, Department of Materials Science and Engineering, Indian Institute of Technology Kanpur, UP 208016, India.*
+
 ---
 ## 🔍 Project Motivation & Concept
 Designing high-performance oxide thermoelectric materials is challenging due to the complex coupling between chemistry, crystal structure, and transport physics. Experimental trial-and-error approaches are time-consuming and resource intensive.
