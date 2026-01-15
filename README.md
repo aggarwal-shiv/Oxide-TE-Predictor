@@ -1,231 +1,142 @@
-🧪 Oxide TE-Predictor
+Oxide TE Predictor ⚛️
 
-Machine-Learning–Driven Prediction of Thermoelectric Properties of Oxide Perovskites
+Oxide TE Predictor is a machine learning framework designed to predict the thermoelectric (TE) properties of Oxide Perovskites for energy harvesting applications.
 
-🌐 Live Web App: https://www.te-predictor.com
+This repository contains the complete pipeline for data preprocessing, feature engineering, automated model training (with hyperparameter optimization), and a deployment-ready web application.
 
-📌 Project Overview
+🔗 Live Application: www.te-predictor.com
 
-Oxide TE-Predictor is an end-to-end machine-learning platform developed to predict thermoelectric (TE) properties of oxide perovskites (ABO₃) for high-temperature thermoelectric applications.
+📋 Table of Contents
 
-The platform integrates:
+Project Overview
 
-Physics-informed featurization
+Repository Structure
 
-Advanced ensemble ML models
+Workflow
 
-Hyperparameter optimization (Optuna)
+1. Data Pre-processing
 
-Explainable AI (SHAP)
+2. ML Pipeline
 
-A Streamlit-based web interface embedded into a public website
+3. Web Application
 
-The predictor simultaneously estimates the following four thermoelectric properties:
+Installation
 
-Electrical Conductivity (σ)
+Model Details
 
-Thermal Conductivity (κ)
+License
 
-Seebeck Coefficient (S)
+🚀 Project Overview
 
-Figure of Merit (zT)
+Thermoelectric materials can convert waste heat into electricity. This project focuses on Oxide Perovskites (ABO₃ structure) and uses ensemble machine learning techniques to predict four key properties based on chemical composition and temperature:
 
-📁 Repository Structure
+Electrical Conductivity ($\sigma$, S/cm)
+
+Thermal Conductivity ($\kappa$, W/m·K)
+
+Seebeck Coefficient ($S$, $\mu$V/K)
+
+Figure of Merit ($zT$)
+
+📂 Repository Structure
+
 Oxide-TE-Predictor/
-│
-├── Data_Preprocessing.ipynb     # Complete featurization & data generation
-├── ML_pipeline.py               # Training, optimization, SHAP & model export
-├── app.py                       # Streamlit web application
-│
 ├── data/
-│   ├── Dataset_new.xlsx         # Raw curated experimental dataset
-│   ├── elemental_properties.xlsx
-│   ├── featured_data_final.csv  # Final ML-ready dataset
-│   └── final_data.csv           # Cleaned & renamed dataset
-│
-├── final_models/
-│   ├── *_σ_*.pkl
-│   ├── *_κ_*.pkl
-│   ├── *_S_*.pkl
-│   └── *_zT_*.pkl               # Best optimized models (Feature-aware)
-│
-├── FINAL_RESULTS/               # Full ML outputs (per target)
-│   ├── Optuna logs
-│   ├── RFE results
-│   ├── SHAP explanations
-│   └── Parity data
-│
-├── Figures/
-│   └── correlation_matrix.tif
-│
-└── README.md
+│   ├── Dataset_new.xlsx          # Raw experimental data
+│   ├── elemental_properties.xlsx # Database of atomic properties (radius, mass, etc.)
+│   ├── featured_data_final.csv   # Output of pre-processing
+│   └── final_data.csv            # Cleaned data ready for ML
+├── final_models/                 # Directory where best trained models (.pkl) are saved
+├── Data Pre-processing.ipynb     # Notebook for data cleaning & feature engineering
+├── ML-pipeline.py                # Main script for training, tuning, and evaluating models
+├── app.py                        # Streamlit web application script
+└── README.md                     # Project documentation
 
-🔬 Data Pre-Processing (Data_Preprocessing.ipynb)
-🔹 Raw Dataset
 
-Experimental oxide perovskite data collected manually
+🔄 Workflow
 
-Stored in Dataset_new.xlsx
+1. Data Pre-processing
 
-🔹 Key Pre-Processing Steps
+File: Data Pre-processing.ipynb
 
-Duplicate removal based on composition
+This notebook handles the transformation of raw chemical formulas into machine-readable feature vectors.
 
-Parsing chemical formulas into elemental vectors
+Parsing: Deconstructs complex chemical formulas (e.g., La0.2Ca0.8TiO3) into elemental components.
 
-Filtering strict ABO₃ stoichiometry
+Filtration: Filters datasets to ensure strict ABO₃ stoichiometry (1:1:3 ratio).
 
-A-site, B-site, and X-site element classification
+Feature Engineering: Calculates weighted average physical properties for A-site and B-site elements (e.g., Ionization Energy, Electronegativity, Ionic Radius) and structural descriptors like the Tolerance Factor ($t$) and Octahedral Factor ($\mu$).
 
-Weighted elemental property averaging
+2. ML Pipeline
 
-Physics-based feature engineering, including:
+File: ML-pipeline.py (referenced as "ML pipeline" in your description)
 
-Goldschmidt tolerance factor (Tf)
+A robust, automated pipeline that trains multiple regressor models to find the best predictor for each target property.
 
-Octahedral factor (Of)
+Preprocessing: Handles outlier removal and drops highly correlated features ($r > 0.85$) to reduce multicollinearity.
 
-Structural descriptors
+Feature Selection: Uses Recursive Feature Elimination (RFE) to identify the most critical physical descriptors.
 
-Final feature cleanup & export
+Models Trained: Random Forest, Gradient Boosting, AdaBoost, ExtraTrees, XGBoost, LightGBM, CatBoost, and HistGradientBoosting.
 
-🔹 Output
-data/featured_data_final.csv
+Optimization: Uses Optuna for Bayesian hyperparameter tuning (running ~2000 trials per model).
 
+Interpretability: Generates SHAP (SHapley Additive exPlanations) plots to explain model decisions.
 
-This dataset is the sole input for the ML pipeline.
+Output: The best-performing models are automatically serialized (pickled) into the final_models/ folder.
 
-🤖 Machine Learning Pipeline (ML_pipeline.py)
+3. Web Application
 
-A fully automated, reproducible, and scalable ML workflow.
+File: app.py
 
-🔹 Models Used
+A generic Streamlit interface allowing users to interact with the trained models.
 
-Random Forest
+Input: Users provide a chemical formula (e.g., SrTiO3) and the system parses the A/B site composition.
 
-Extra Trees Regressor
+Real-time Calculation: The app calculates feature vectors on-the-fly using the embedded elemental_properties.xlsx data.
 
-Gradient Boosting
+Visualization: Plots temperature-dependent predictions using Plotly for high-quality, interactive graphs.
 
-AdaBoost
+Design: Features a custom, zero-gap CSS layout for a professional "dashboard" feel.
 
-XGBoost
+🛠️ Installation
 
-LightGBM
+To run this project locally, you will need Python 3.8+ and the following libraries:
 
-CatBoost
+pip install numpy pandas matplotlib seaborn scikit-learn scipy xgboost lightgbm catboost shap optuna streamlit plotly openpyxl
 
-Histogram Gradient Boosting
 
-🔹 Pipeline Steps
+💻 Usage
 
-Data loading & cleaning
+Step 1: Prepare Data
 
-Hard-range outlier removal (physics-guided)
+Ensure your raw data is in data/Dataset_new.xlsx and run the Jupyter Notebook:
 
-Correlation filtering
+jupyter notebook "Data Pre-processing.ipynb"
 
-Recursive Feature Elimination (RFECV)
 
-Hyperparameter optimization using Optuna
+Step 2: Train Models
 
-5-fold cross-validated evaluation
+Run the pipeline to train models and generate results in the FINAL_RESULTS directory:
 
-SHAP explainability (feature importance & dependence)
+python ML-pipeline.py
 
-Final model wrapping with feature awareness
 
-Export of best models
+Step 3: Launch App
 
-🔹 Targets Predicted
-Property	Symbol
-Electrical Conductivity	σ
-Thermal Conductivity	κ
-Seebeck Coefficient	S
-Figure of Merit	zT
-🔹 Output Models
+Start the web interface locally:
 
-Saved in:
+streamlit run app.py
 
-final_models/
 
+🧠 Model Details
 
-Each model is feature-aware, ensuring consistency during deployment.
+The ML pipeline evaluates models based on R² score, MAE (Mean Absolute Error), and RMSE. The final deployed models are chosen based on the highest predictive accuracy on unseen test data.
 
-🌐 Web Application (app.py)
+Correlation Analysis: Pearson correlation matrices are generated to ensure feature independence.
 
-The Streamlit application enables real-time prediction from user-defined oxide compositions.
-
-🔹 Features
-
-Accepts arbitrary ABO₃ compositions (e.g. La0.2Ca0.8TiO3)
-
-Automatic site validation (A-site / B-site)
-
-Temperature-dependent predictions (300–1100 K)
-
-Interactive Plotly visualizations
-
-Physics-based feature reconstruction on-the-fly
-
-Debug panel for transparency
-
-🔹 Deployment
-
-Built with Streamlit
-
-Embedded into the public website:
-👉 https://www.te-predictor.com
-
-📊 Explainable AI (SHAP)
-
-SHAP analysis is performed for each target:
-
-Mean absolute SHAP importance
-
-Feature-wise contribution
-
-Dependence data export (no plots for scalability)
-
-This allows physical interpretation of:
-
-A-site vs B-site dominance
-
-Role of ionic radii, electronegativity, and bonding
-
-Structure–property relationships
-
-🧠 Scientific Significance
-
-Enables inverse materials design for oxide thermoelectrics
-
-Identifies optimal A- and B-site chemistry
-
-Bridges solid-state physics + machine learning
-
-Ready for high-temperature TE material screening
-
-📦 Requirements
-python >= 3.9
-numpy
-pandas
-scikit-learn
-optuna
-xgboost
-lightgbm
-catboost
-shap
-streamlit
-plotly
-openpyxl
+Parity Plots: Generated for every model to visualize Predicted vs. Experimental values.
 
 📜 License
 
-This project is intended for academic and research use.
-Please cite appropriately if used in publications.
-
-✉️ Contact
-
-Developer: Shivam Aggarwal
-Affiliation: Plasmonics & Perovskite Laboratory (PPL)
-Website: https://www.te-predictor.com
+This project is open-source. Please cite the associated research paper or website (www.te-predictor.com) if you use this code or data in your work.
