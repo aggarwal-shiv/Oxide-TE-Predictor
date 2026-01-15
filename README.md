@@ -112,14 +112,14 @@ The use of ensemble learning allows robust capture of nonlinear chemistry–prop
 - Histogram Gradient Boosting
 
 ### Workflow
-1. Data loading & cleaning  
-2. Physics-guided hard-range outlier removal  
-3. Correlation-based feature filtering  
-4. Recursive Feature Elimination with Cross-Validation (RFECV)  
-5. Optuna-based hyperparameter optimization  
-6. 5-fold cross-validation  
-7. SHAP explainability analysis  
-8. Feature-aware model export  
+- Data loading & cleaning  
+- Physics-guided hard-range outlier removal  
+- Correlation-based feature filtering  
+- Recursive Feature Elimination with Cross-Validation (RFECV)  
+- Optuna-based hyperparameter optimization  
+- 5-fold cross-validation  
+- SHAP explainability analysis  
+- Feature-aware model export  
 
 ### Model Output
 ```
