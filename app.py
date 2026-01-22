@@ -202,7 +202,7 @@ def prepare_input(model, A, B, T, elem_props):
 # =============================================================================
 
 # --- HEADER ---
-st.markdown('<div class="custom-header">Oxide TE-Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-header">Perovskite TE-Predictor</div>', unsafe_allow_html=True)
 
 # --- INPUT BAR ---
 c1, c2, c3, c4 = st.columns([2.5, 3, 1, 2.5], gap="small")
@@ -329,6 +329,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
