@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 # =============================================================================
 # 1. VISUAL CONFIGURATION (ZERO-GAP LAYOUT)
 # =============================================================================
-st.set_page_config(page_title="Oxide TE-Predictor", layout="wide")
+st.set_page_config(page_title="Perovskite TE-Predictor", layout="wide")
 
 st.markdown("""
 <style>
@@ -329,6 +329,7 @@ if btn and elem_props:
 
 # --- STATUS BAR ---
 st.markdown(f'<div class="status-bar">{status_msg}</div>', unsafe_allow_html=True)
+
 
 
 
