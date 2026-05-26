@@ -151,7 +151,7 @@ All SHAP artifacts are exported for further analysis.
 ### Deployment
 The Streamlit app is embedded into:
 
-👉 https://www.te-predictor.com
+👉 https://oxide-te-predictor.streamlit.app
 
 ---
 
