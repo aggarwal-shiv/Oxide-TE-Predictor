@@ -11,7 +11,7 @@ Designing high-performance oxide thermoelectric materials is challenging due to 
 
 In this work, machine learning models are trained directly on experimentally reported thermoelectric data of oxide perovskites. To convert chemical compositions into meaningful numerical representations, a PAEP (Physically Aware Elemental Property) featurization strategy is employed.
 
-The trained models learn hidden chemistry–property relationships that are difficult to capture using traditional analytical or phenomenological models.
+The trained models learn hidden chemistry-property relationships that are difficult to capture using traditional analytical or phenomenological models.
 
 To move beyond black-box prediction, explainable artificial intelligence techniques based on SHAP analysis are employed to extract chemically and physically meaningful trends. This enables scientific interpretation of how A-site and B-site chemistry governs thermoelectric performance.
 
