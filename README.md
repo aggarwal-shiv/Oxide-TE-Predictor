@@ -173,7 +173,7 @@ The Streamlit app is embedded into:
 ## 🛠 Installation
 
 ```bash
-git clone https://github.com/yourusername/oxide-te-predictor.git
+git clone https://github.com/aggarwal-shiv/oxide-te-predictor.git
 cd oxide-te-predictor
 pip install -r requirements.txt
 ```
@@ -193,7 +193,7 @@ Please cite appropriately if used in publications.
 
 Plasmonics and Perovskites Laboratory, Department of Materials Science and Engineering, Indian Institute of Technology Kanpur, UP 208016, India.
 
-🌐 https://www.te-predictor.com  
+🌐 https://home.iitk.ac.in/~tmaiti/Oxide%20TE-Predictor.html 
 
 ---
 
