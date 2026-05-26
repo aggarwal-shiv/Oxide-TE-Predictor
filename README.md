@@ -1,5 +1,5 @@
 # 🧪 Oxide TE-Predictor  
-# **An Interpretable Machine Learning Framework aided Accelerated Design of Oxide Perovskites-based Thermoelectrics for Clean Energy Generation from Waste Heat**
+# **Interpretable Machine Learning for Accelerated Design of Oxide Perovskite Thermoelectric Materials**
 
 *Shivam Aggarwal, Amandeep Saha, and Tanmoy Maiti* 
 
